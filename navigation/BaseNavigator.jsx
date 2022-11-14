@@ -12,8 +12,9 @@ import { ColorSchemeName, Platform, Pressable } from "react-native";
 import Colors from "../constants/Colors";
 
 import { Chat } from "../screens/Chat";
+import { screenOptions as chatScreenOption } from "../screens/Chat";
 import { Conversations } from "../screens/Conversations";
-import {screenOptions as conversationScreenOptions} from '../screens/Conversations'
+import { screenOptions as conversationScreenOptions } from "../screens/Conversations";
 
 const defaultNavOptions = {
   headerStyle: {
@@ -44,9 +45,9 @@ function BaseNavigator() {
       <Stack.Screen
         name="Conversations"
         component={Conversations}
-        options={conversationScreenOptions }
+        options={conversationScreenOptions}
       />
-      <Stack.Screen name="Chat" component={Chat} options={{ title: "Oops!" }} />
+      <Stack.Screen name="Chat" component={Chat} options={chatScreenOption} />
     </Stack.Navigator>
   );
 }
