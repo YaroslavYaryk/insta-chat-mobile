@@ -32,7 +32,7 @@ const CustomModal = (props) => {
       <Modal
         transparent={true}
         // visible={props.isOpen}
-        animationType="fade"
+        animationType={props.anymType ? props.anymType : "fade"}
         onRequestClose={() => props.close()}
       >
         <TouchableOpacity

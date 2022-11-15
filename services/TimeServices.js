@@ -2,7 +2,6 @@ export function formatMessageTimestamp(timestamp, forHeader = null) {
   if (!timestamp) return;
   const date = new Date(timestamp);
   const today = new Date();
-
   const dateFormat1 = date.toDateString();
   const dateFormat2 = today.toDateString();
 

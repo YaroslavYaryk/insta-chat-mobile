@@ -26,6 +26,7 @@ export const Conversations = (props) => {
     username: "yaroslav",
     token: "5ac5b2ed8289b986f9bce9864305573ff8595a69",
   };
+
   const [isOpen, setIsOpen] = useState(false);
   const activeUsers = useSelector((state) => state.users.activeUsers);
   const unreadMessages = useSelector(
@@ -40,6 +41,7 @@ export const Conversations = (props) => {
   const conversations = useSelector(
     (state) => state.conversations.conversations
   );
+  // console.log(conversations.map((el) => el.last_message.content));
   // var ws = new WebSocket(`ws://${JUST_HOST}:${PORT}/conversations/?token=${token}`);
   // ws.onopen = () =>{
   //   console.log("open")
@@ -218,8 +220,13 @@ export const Conversations = (props) => {
 };
 
 export const screenOptions = (navData) => {
+  var forwardedMessageId = "";
+  if (navData.route.params) {
+    forwardedMessageId = navData.route.params.forwardedMessageId;
+  }
+
   return {
-    headerTitle: "Instachat",
+    headerTitle: forwardedMessageId ? "Forward to..." : "Instachat",
     headerLeft: () => (
       <HeaderButtons HeaderButtonComponent={CustomHeaderButton}>
         <Item

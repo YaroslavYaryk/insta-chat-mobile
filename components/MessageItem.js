@@ -68,13 +68,15 @@ export const MessageItem = (props) => {
             borderWidth:
               messageOptionsOpen ||
               message.scroll ||
-              props.editedId === message.id
+              props.editedId === message.id ||
+              props.repliedMessageId === message.id
                 ? 1.5
                 : 0,
             borderColor:
               messageOptionsOpen ||
               message.scroll ||
-              props.editedId === message.id
+              props.editedId === message.id ||
+              props.repliedMessageId === message.id
                 ? "#69bbfa"
                 : "",
           }}
@@ -84,7 +86,7 @@ export const MessageItem = (props) => {
               style={{
                 fontSize: 10,
                 marginLeft: 5,
-                marginBottom: -5,
+                marginBottom: 2,
                 paddingHorizontal: 5,
               }}
             >
@@ -334,7 +336,8 @@ export const MessageItem = (props) => {
               >
                 <TouchableOpacity
                   onPress={() => {
-                    console.log("reply");
+                    props.replyMessage(message.id);
+                    setMessageOptionsOpen(false);
                   }}
                 >
                   <View style={styles.messageOptions}>
@@ -355,7 +358,8 @@ export const MessageItem = (props) => {
                 </TouchableOpacity>
                 <TouchableOpacity
                   onPress={() => {
-                    console.log("forward");
+                    props.forwardMessage(message.id);
+                    setMessageOptionsOpen(false);
                   }}
                 >
                   <View style={styles.messageOptions}>

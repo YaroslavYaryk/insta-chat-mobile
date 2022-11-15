@@ -28,7 +28,7 @@ import { FontAwesome5 } from "@expo/vector-icons";
 import { SimpleLineIcons } from "@expo/vector-icons";
 import { FontAwesome } from "@expo/vector-icons";
 import Lightbox from "react-native-lightbox";
-
+import { Octicons } from "@expo/vector-icons";
 import { JUST_HOST, PORT, HOST } from "../config/server";
 
 import useWebSocket from "react-use-websocket";
@@ -40,7 +40,9 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import * as FileSystem from "expo-file-system";
 import CustomModal from "../components/CustomModal";
+import { useFocusEffect, useIsFocused } from "@react-navigation/native";
 
+import ChoseConversationPopup from "../components/ChoseConversationPopup";
 import { formatMessageTimestamp } from "../services/TimeServices";
 
 const VIEWABILITY_CONFIG = {
@@ -53,6 +55,7 @@ const { width, height } = Dimensions.get("window");
 
 export const Chat = (props) => {
   const { conversationName } = props.route.params;
+
   var user = {
     username: "yaroslav",
     token: "5ac5b2ed8289b986f9bce9864305573ff8595a69",
@@ -72,6 +75,7 @@ export const Chat = (props) => {
 
   const [isForwarded, setIsForwarded] = useState(false);
   const [forwardConversationName, setForwardConversationName] = useState(null);
+  const [forwardedMessageId, setForwarderMessageId] = useState(null);
 
   const [param, setParam] = useState(false);
 
@@ -229,6 +233,38 @@ export const Chat = (props) => {
     }
   }
 
+  const forwardMessage = (messageId) => {
+    // var message = messageHistory.find((el) => el.id === messageId);
+    // setMessage(message.content);
+    // setFilesBase64(
+    //   message.images.map((el) => ({
+    //     url: el,
+    //     id: Math.random() + Math.random(),
+    //   }))
+    // );
+    setForwarderMessageId(messageId);
+    setIsForwarded(!isForwarded);
+  };
+
+  const handleChooseUserToForward = (conversationName) => {
+    var message = messageHistory.find((el) => el.id === forwardedMessageId);
+
+    setForwardConversationName(conversationName);
+    // handleSubmit(conversationName);
+    sendJsonMessage({
+      type: "chat_message",
+      message: message.content,
+      filesBase64: message.images.map((el) => ({
+        url: el,
+        id: Math.random() + Math.random(),
+      })),
+      parent: repliedMessageId,
+      conversation_name: conversationName,
+      forwarded: isForwarded,
+    });
+    makaAllNull();
+  };
+
   useEffect(() => {
     async function fetchConversation() {
       const apiRes = await fetch(
@@ -334,9 +370,11 @@ export const Chat = (props) => {
     setIsReply(false);
     setIsForwarded(false);
     setForwardConversationName(null);
+    setForwarderMessageId(null);
   };
 
   function handleSubmit(conversationName) {
+    console.log(message.length, filesBase64.length);
     if (message.length > 0 || filesBase64.length > 0) {
       if (isEdit) {
         sendJsonMessage({
@@ -346,6 +384,7 @@ export const Chat = (props) => {
           filesBase64: filesBase64,
         });
       } else {
+        console.log("here", "send chat message");
         sendJsonMessage({
           type: "chat_message",
           message,
@@ -360,6 +399,11 @@ export const Chat = (props) => {
       // setParam(!param);
     }
   }
+
+  const replyMessage = (messageId) => {
+    setRepliedMessageId(messageId);
+    setIsReply(true);
+  };
 
   const editMessage = (messageId) => {
     setIsEdit(true);
@@ -404,6 +448,22 @@ export const Chat = (props) => {
     setFilesBase64((old) => old.filter((el) => el.id !== id));
   };
 
+  function onType() {
+    if (meTyping === false) {
+      setMeTyping(true);
+      sendJsonMessage({ type: "typing", typing: true });
+      timeout.current = setTimeout(timeoutFunction, 5000);
+    } else {
+      clearTimeout(timeout.current);
+      timeout.current = setTimeout(timeoutFunction, 5000);
+    }
+  }
+
+  function handleChangeMessage(e) {
+    setMessage(e);
+    onType();
+  }
+
   return (
     <View style={styles.container}>
       <FlatList
@@ -425,6 +485,9 @@ export const Chat = (props) => {
               scrollToElement={scrollToElement}
               editMessage={editMessage}
               editedId={editedId}
+              replyMessage={replyMessage}
+              repliedMessageId={repliedMessageId}
+              forwardMessage={forwardMessage}
             ></MessageItem>
           </View>
         )}
@@ -442,7 +505,57 @@ export const Chat = (props) => {
               ) : (
                 <View style={{ flexDirection: "row", alignItems: "center" }}>
                   {getMessageById(editedId).images.map((el) => (
-                    <View style={{ height: 40, width: 40 }}>
+                    <View
+                      style={{ height: 40, width: 40 }}
+                      key={el + Math.random()}
+                    >
+                      <Image
+                        style={{
+                          width: "100%",
+                          height: "100%",
+                          resizeMode: "center",
+                          // borderRadius: "50%",
+                          // borderRadius: 100,
+                        }}
+                        source={{
+                          uri: el,
+                        }}
+                      />
+                    </View>
+                  ))}
+                </View>
+              )}
+            </View>
+            <FontAwesome5
+              name="times"
+              size={24}
+              color="#B2B2B2"
+              style={{ minWidth: 50 }}
+              onPress={() => {
+                {
+                  makaAllNull();
+                }
+              }}
+            />
+          </View>
+        </View>
+      )}
+      {isReply && (
+        <View style={{ padding: 10, backgroundColor: "#2b5278" }}>
+          <View style={{ flexDirection: "row", alignItems: "center" }}>
+            <Octicons name="reply" size={20} color="#B2B2B2" />
+            <View style={{ marginLeft: 10, width: "85%" }}>
+              {getMessageById(repliedMessageId).content ? (
+                <Text style={{ color: Colors.text }}>
+                  {getMessageById(repliedMessageId).content}
+                </Text>
+              ) : (
+                <View style={{ flexDirection: "row", alignItems: "center" }}>
+                  {getMessageById(repliedMessageId).images.map((el) => (
+                    <View
+                      style={{ height: 40, width: 40 }}
+                      key={el + Math.random()}
+                    >
                       <Image
                         style={{
                           width: "100%",
@@ -535,9 +648,7 @@ export const Chat = (props) => {
         >
           <TextInput
             style={{ padding: 5, color: "white" }}
-            onChangeText={(el) => {
-              setMessage(el);
-            }}
+            onChangeText={handleChangeMessage}
             value={message}
             placeholder="Write a message..."
             placeholderTextColor="#989DA1"
@@ -618,6 +729,29 @@ export const Chat = (props) => {
           </View>
         </CustomModal>
       )}
+      {isForwarded && (
+        <CustomModal
+          animType="slide"
+          isOpen={isForwarded}
+          close={() => {
+            makaAllNull();
+          }}
+        >
+          <View
+            style={{
+              height: height / 1.3,
+              width: width / 1.3,
+              borderColor: "#8E8E8E",
+              backgroundColor: "rgba(46,55,64,0.95)",
+              borderRadius: 20,
+            }}
+          >
+            <ChoseConversationPopup
+              handleSelectChat={handleChooseUserToForward}
+            />
+          </View>
+        </CustomModal>
+      )}
     </View>
   );
 };
@@ -671,49 +805,66 @@ export const screenOptions = (navData) => {
               <View>
                 {!participants.includes(conversation.other_user.username) ? (
                   <View style={{ flexDirection: "row", alignItems: "center" }}>
-                    <View
-                      style={{
-                        flexDirection: "row",
-                        alignItems: "center",
-                      }}
-                    >
-                      <Text style={styles.textHeader}>Seen</Text>
-                      {!formatMessageTimestamp(
-                        conversation.other_user.last_login,
-                        true
-                      )[3] ? (
-                        <Text style={[{ marginLeft: 5 }, styles.textHeader]}>
-                          yesterday
-                        </Text>
-                      ) : (
-                        <Text style={[{ marginLeft: 5 }, styles.textHeader]}>
+                    {!formatMessageTimestamp(
+                      conversation.other_user.last_login,
+                      true
+                    ) ? (
+                      <Text style={[{ marginLeft: 5 }, styles.textHeader]}>
+                        {<Text>Last seen recently</Text>}
+                      </Text>
+                    ) : (
+                      <View
+                        style={{ flexDirection: "row", alignItems: "center" }}
+                      >
+                        <View
+                          style={{
+                            flexDirection: "row",
+                            alignItems: "center",
+                          }}
+                        >
+                          <Text style={styles.textHeader}>Seen</Text>
+                          {!formatMessageTimestamp(
+                            conversation.other_user.last_login,
+                            true
+                          )[3] ? (
+                            <Text
+                              style={[{ marginLeft: 3 }, styles.textHeader]}
+                            >
+                              yesterday
+                            </Text>
+                          ) : (
+                            <Text
+                              style={[{ marginLeft: 3 }, styles.textHeader]}
+                            >
+                              {
+                                formatMessageTimestamp(
+                                  conversation.other_user.last_login,
+                                  true
+                                )[2]
+                              }
+                            </Text>
+                          )}
+                          <Text style={[styles.textHeader, { marginLeft: 3 }]}>
+                            at
+                          </Text>
+                        </View>
+                        <Text
+                          style={{
+                            fontSize: 12,
+                            fontWeight: "400",
+                            color: Colors.text,
+                            marginLeft: 3,
+                          }}
+                        >
                           {
                             formatMessageTimestamp(
                               conversation.other_user.last_login,
                               true
-                            )[2]
+                            )[0]
                           }
                         </Text>
-                      )}
-                      <Text style={[styles.textHeader, { marginLeft: 5 }]}>
-                        at
-                      </Text>
-                    </View>
-                    <Text
-                      style={{
-                        fontSize: 12,
-                        fontWeight: "400",
-                        color: Colors.text,
-                        marginLeft: 5,
-                      }}
-                    >
-                      {
-                        formatMessageTimestamp(
-                          conversation.other_user.last_login,
-                          true
-                        )[0]
-                      }
-                    </Text>
+                      </View>
+                    )}
                   </View>
                 ) : (
                   <Text
