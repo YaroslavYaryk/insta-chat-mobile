@@ -27,14 +27,12 @@ import { Octicons } from "@expo/vector-icons";
 import { MaterialIcons } from "@expo/vector-icons";
 import CustomModal from "./CustomModal";
 import { FontAwesome } from "@expo/vector-icons";
+import { useDispatch, useSelector } from "react-redux";
 
 const { width, height } = Dimensions.get("window");
 
 export const MessageItem = (props) => {
-  var user = {
-    username: "yaroslav",
-    token: "5ac5b2ed8289b986f9bce9864305573ff8595a69",
-  };
+  const user = useSelector((state) => state.auth);
 
   const [imagePreview, setImagePreview] = useState("");
 

@@ -22,16 +22,13 @@ import * as usersActions from "../store/actions/usersActions";
 import { ConversationItem } from "../components/ConversationItem";
 
 export const Conversations = (props) => {
-  var user = {
-    username: "yaroslav",
-    token: "5ac5b2ed8289b986f9bce9864305573ff8595a69",
-  };
-
+  const user = useSelector((state) => state.auth);
   const [isOpen, setIsOpen] = useState(false);
   const activeUsers = useSelector((state) => state.users.activeUsers);
   const unreadMessages = useSelector(
     (state) => state.conversations.unreadMessages
   );
+  console.log(user);
 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState();
@@ -184,6 +181,14 @@ export const Conversations = (props) => {
     });
   };
 
+  if (conversations.length == 0) {
+    return (
+      <View style={styles.centered}>
+        <Text style={{ color: Colors.text }}>You dont have conversations</Text>
+      </View>
+    );
+  }
+
   return (
     <View style={[styles.container, {}]}>
       <FlatList
@@ -240,7 +245,9 @@ export const screenOptions = (navData) => {
               ? "reorder-three-sharp"
               : "ios-reorder-three"
           }
-          onPress={() => {}}
+          onPress={() => {
+            navData.navigation.toggleDrawer();
+          }}
         />
       </HeaderButtons>
     ),
@@ -264,5 +271,11 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: Colors.background,
+  },
+  centered: {
+    flex: 1,
+    backgroundColor: Colors.background,
+    justifyContent: "center",
+    alignItems: "center",
   },
 });

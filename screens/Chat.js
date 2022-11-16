@@ -56,13 +56,8 @@ const { width, height } = Dimensions.get("window");
 export const Chat = (props) => {
   const { conversationName } = props.route.params;
 
-  var user = {
-    username: "yaroslav",
-    token: "5ac5b2ed8289b986f9bce9864305573ff8595a69",
-  };
-
+  const user = useSelector((state) => state.auth);
   const dispatch = useDispatch();
-
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState();
 

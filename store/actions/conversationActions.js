@@ -10,7 +10,7 @@ export const fetchConversations = () => {
   try {
     return async (dispatch, getState) => {
       //  var token = getState().auth.token;
-      var token = "5ac5b2ed8289b986f9bce9864305573ff8595a69";
+      var token = getState().auth.token;
 
       const response = await fetch(
         `${HOST}:${PORT}/chat/api/active_conversation/`,

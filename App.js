@@ -9,15 +9,17 @@ import { Provider } from "react-redux";
 import { combineReducers, applyMiddleware } from "redux";
 import { LogBox } from "react-native";
 
-import Navigation from "./navigation/BaseNavigator";
+import BaseAuthNavigator from "./navigation/Navigator";
 import conversationReducer from "./store/reducers/conversationReducer";
 import usersReducer from "./store/reducers/usersReducer";
 import chatReducer from "./store/reducers/chatReducer";
+import authReducer from "./store/reducers/authReducer";
 
 const rootReducer = combineReducers({
   conversations: conversationReducer,
   users: usersReducer,
   chat: chatReducer,
+  auth: authReducer,
 });
 
 const store = configureStore(
@@ -43,7 +45,7 @@ export default function App() {
   } else {
     return (
       <Provider store={store}>
-        <Navigation />
+        <BaseAuthNavigator />
       </Provider>
     );
   }

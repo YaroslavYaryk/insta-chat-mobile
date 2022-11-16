@@ -22,10 +22,8 @@ import * as usersActions from "../store/actions/usersActions";
 import { ConversationItem } from "../components/ConversationItem";
 
 const ChoseConversationPopup = (props) => {
-  var user = {
-    username: "yaroslav",
-    token: "5ac5b2ed8289b986f9bce9864305573ff8595a69",
-  };
+  const user = useSelector((state) => state.auth);
+
   const conversations = useSelector(
     (state) => state.conversations.conversations
   );
