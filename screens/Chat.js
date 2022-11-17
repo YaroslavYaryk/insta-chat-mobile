@@ -60,7 +60,6 @@ export const Chat = (props) => {
   const dispatch = useDispatch();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState();
-
   const [participants, setParticipants] = useState([]);
   const [filesBase64, setFilesBase64] = useState([]);
   const [emojiOpen, setEmojiOpen] = useState(false);
@@ -97,6 +96,7 @@ export const Chat = (props) => {
       },
       onOpen: () => {
         console.log("Connected!");
+        sendJsonMessage({ type: "read_messages" });
       },
       onClose: () => {
         console.log("Disconnected!");
@@ -165,12 +165,15 @@ export const Chat = (props) => {
             );
             break;
           case "user_join":
+            console.log(participants, data.user);
             setParticipants((pcpts) => {
               if (!pcpts.includes(data.user)) {
                 return [...pcpts, data.user];
               }
               return pcpts;
             });
+
+            // setQuery(Math.random() + Math.random() + Math.random());
 
             break;
           case "user_leave":
@@ -179,7 +182,8 @@ export const Chat = (props) => {
 
               return newPcpts;
             });
-            setQuery(Math.random() + Math.random() + Math.random());
+
+            // setQuery(Math.random() + Math.random() + Math.random());
             // var oldConversation:ConversationModel = {...conversation}
             // oldConversation.other_user = data.updated_user
             // setConversation({...oldConversation})
@@ -200,6 +204,12 @@ export const Chat = (props) => {
       },
     }
   );
+
+  useEffect(() => {
+    props.navigation.setParams({
+      typing: typing,
+    });
+  }, [typing]);
 
   async function fetchMessages() {
     if (!hasMoreMessages) {
@@ -287,9 +297,7 @@ export const Chat = (props) => {
       }
     }
     fetchConversation();
-  }, [conversationName, query]);
-
-  const renderItemSeparator = () => <View></View>;
+  }, [conversationName, query, participants]);
 
   function updateTyping(event) {
     if (event.user !== user.username) {
@@ -332,7 +340,6 @@ export const Chat = (props) => {
   const scrollToElement = (messageId) => {
     var message = messageHistory.find((el) => el.id === messageId);
     changeMessageViewOnScroll(message, true);
-    console.log(message.ref);
     message.ref.current.scrollIntoView({ behavior: "smooth" });
     clearTimeout(timeout.current);
     timeout.current = setTimeout(
@@ -369,7 +376,6 @@ export const Chat = (props) => {
   };
 
   function handleSubmit(conversationName) {
-    console.log(message.length, filesBase64.length);
     if (message.length > 0 || filesBase64.length > 0) {
       if (isEdit) {
         sendJsonMessage({
@@ -379,7 +385,6 @@ export const Chat = (props) => {
           filesBase64: filesBase64,
         });
       } else {
-        console.log("here", "send chat message");
         sendJsonMessage({
           type: "chat_message",
           message,
@@ -752,128 +757,161 @@ export const Chat = (props) => {
 };
 
 export const screenOptions = (navData) => {
-  const { conversation, participants } = navData.route.params;
+  const { conversation, participants, typing } = navData.route.params;
+
+  // console.log(navData.route.params);
   return {
     headerTitle: () => (
       <View style={{ marginLeft: -10 }}>
         {conversation ? (
-          <View style={{ flexDirection: "row", alignItems: "center" }}>
-            <View style={{ width: 40, height: 40 }}>
-              {conversation.other_user.image ? (
-                <Image
-                  style={{
-                    width: "100%",
-                    height: "100%",
-                    resizeMode: "cover",
-                    // height: "100%",
-                    // borderRadius: "50%",
-                    borderRadius: 100,
-                  }}
-                  onClick={() => {
-                    console.log("click");
-                  }}
-                  source={{
-                    uri: conversation.other_user.image,
-                  }}
-                />
-              ) : (
-                <Image
-                  style={{
-                    width: "100%",
-                    height: "100%",
-                    borderRadius: 100,
-                  }}
-                  source={require("../assets/man.png")}
-                />
-              )}
-            </View>
-            <View style={{ marginLeft: 10 }}>
-              <Text
-                style={{
-                  fontSize: 16,
-                  fontWeight: "500",
-                  color: Colors.text,
-                }}
-              >
-                {conversation.other_user.username}
-              </Text>
-              <View>
-                {!participants.includes(conversation.other_user.username) ? (
-                  <View style={{ flexDirection: "row", alignItems: "center" }}>
-                    {!formatMessageTimestamp(
-                      conversation.other_user.last_login,
-                      true
-                    ) ? (
-                      <Text style={[{ marginLeft: 5 }, styles.textHeader]}>
-                        {<Text>Last seen recently</Text>}
-                      </Text>
-                    ) : (
-                      <View
-                        style={{ flexDirection: "row", alignItems: "center" }}
-                      >
-                        <View
-                          style={{
-                            flexDirection: "row",
-                            alignItems: "center",
-                          }}
-                        >
-                          <Text style={styles.textHeader}>Seen</Text>
-                          {!formatMessageTimestamp(
-                            conversation.other_user.last_login,
-                            true
-                          )[3] ? (
-                            <Text
-                              style={[{ marginLeft: 3 }, styles.textHeader]}
-                            >
-                              yesterday
-                            </Text>
-                          ) : (
-                            <Text
-                              style={[{ marginLeft: 3 }, styles.textHeader]}
-                            >
-                              {
-                                formatMessageTimestamp(
-                                  conversation.other_user.last_login,
-                                  true
-                                )[2]
-                              }
-                            </Text>
-                          )}
-                          <Text style={[styles.textHeader, { marginLeft: 3 }]}>
-                            at
-                          </Text>
-                        </View>
-                        <Text
-                          style={{
-                            fontSize: 12,
-                            fontWeight: "400",
-                            color: Colors.text,
-                            marginLeft: 3,
-                          }}
-                        >
-                          {
-                            formatMessageTimestamp(
-                              conversation.other_user.last_login,
-                              true
-                            )[0]
-                          }
-                        </Text>
-                      </View>
-                    )}
-                  </View>
-                ) : (
-                  <Text
+          <TouchableOpacity
+            onPress={() => {
+              navData.navigation.navigate("UserInfo", {
+                username: conversation.other_user.username,
+                convName: conversation.name,
+              });
+            }}
+          >
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+              }}
+            >
+              <View style={{ width: 40, height: 40 }}>
+                {conversation.other_user.image ? (
+                  <Image
                     style={{
-                      fontSize: 10,
-                      fontWeight: "400",
+                      width: "100%",
+                      height: "100%",
+                      resizeMode: "cover",
+                      // height: "100%",
+                      // borderRadius: "50%",
+                      borderRadius: 100,
                     }}
-                  >
-                    Online
-                  </Text>
+                    source={{
+                      uri: conversation.other_user.image,
+                    }}
+                  />
+                ) : (
+                  <Image
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      borderRadius: 100,
+                    }}
+                    source={require("../assets/man.png")}
+                  />
                 )}
               </View>
+              <View style={{ marginLeft: 10 }}>
+                <Text
+                  style={{
+                    fontSize: 16,
+                    fontWeight: "500",
+                    color: Colors.text,
+                  }}
+                >
+                  {conversation.other_user.username}
+                </Text>
+                <View>
+                  {!participants.includes(conversation.other_user.username) ? (
+                    <View
+                      style={{ flexDirection: "row", alignItems: "center" }}
+                    >
+                      {!formatMessageTimestamp(
+                        conversation.other_user.last_login,
+                        true
+                      ) ? (
+                        <Text style={[{ marginLeft: 5 }, styles.textHeader]}>
+                          {<Text>Last seen recently</Text>}
+                        </Text>
+                      ) : (
+                        <View
+                          style={{ flexDirection: "row", alignItems: "center" }}
+                        >
+                          <View
+                            style={{
+                              flexDirection: "row",
+                              alignItems: "center",
+                            }}
+                          >
+                            <Text style={styles.textHeader}>Seen</Text>
+                            {formatMessageTimestamp(
+                              conversation.other_user.last_login,
+                              true
+                            )[3] ? (
+                              <Text
+                                style={[{ marginLeft: 3 }, styles.textHeader]}
+                              >
+                                yesterday
+                              </Text>
+                            ) : formatMessageTimestamp(
+                                conversation.other_user.last_login,
+                                true
+                              )[4] ? (
+                              <Text></Text>
+                            ) : (
+                              <Text
+                                style={[{ marginLeft: 3 }, styles.textHeader]}
+                              >
+                                {
+                                  formatMessageTimestamp(
+                                    conversation.other_user.last_login,
+                                    true
+                                  )[2]
+                                }
+                              </Text>
+                            )}
+                            <Text
+                              style={[styles.textHeader, { marginLeft: 3 }]}
+                            >
+                              at
+                            </Text>
+                          </View>
+                          <Text
+                            style={{
+                              fontSize: 12,
+                              fontWeight: "400",
+                              color: Colors.text,
+                              marginLeft: 3,
+                            }}
+                          >
+                            {
+                              formatMessageTimestamp(
+                                conversation.other_user.last_login,
+                                true
+                              )[0]
+                            }
+                          </Text>
+                        </View>
+                      )}
+                    </View>
+                  ) : !typing ? (
+                    <Text
+                      style={{
+                        fontSize: 10,
+                        fontWeight: "400",
+                        color: Colors.text,
+                      }}
+                    >
+                      Online
+                    </Text>
+                  ) : (
+                    <Text
+                      style={{
+                        fontSize: 10,
+                        fontWeight: "400",
+                        color: Colors.text,
+                      }}
+                    >
+                      Typing...
+                    </Text>
+                  )}
+                </View>
+              </View>
             </View>
-          </View>
+          </TouchableOpacity>
         ) : (
           <View>
             <Text>TEXT</Text>

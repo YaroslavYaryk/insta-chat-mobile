@@ -4,6 +4,7 @@ import {
   SET_UNREAD_MESSAGES,
   ADD_UNREAD_MESSAGE,
   DELETE_UNREAD_MESSAGE,
+  DELETE_CONVERSATION,
 } from "../actions/conversationActions";
 
 const initialState = {
@@ -73,6 +74,13 @@ const conversationReducer = (state = initialState, action) => {
       return {
         ...state,
         unreadMessages: oldMessages,
+      };
+    case DELETE_CONVERSATION:
+      return {
+        ...state,
+        conversations: state.conversations.filter(
+          (el) => el.name !== action.name
+        ),
       };
   }
   return state;

@@ -25,6 +25,12 @@ import { screenOptions as chatScreenOption } from "../screens/Chat";
 import { Conversations } from "../screens/Conversations";
 import { screenOptions as conversationScreenOptions } from "../screens/Conversations";
 
+import { StartConversation } from "../screens/StartConversation";
+import { screenOptions as startConversationScreenOptions } from "../screens/StartConversation";
+
+import { UserInfo } from "../screens/UserInfo";
+import { screenOptions as userInfoScreenActions } from "../screens/UserInfo";
+
 import Settings from "../screens/Settings";
 
 import CustomDrawer from "../components/UI/CustomDrawer";
@@ -57,6 +63,12 @@ function BaseNavigator() {
         options={conversationScreenOptions}
       />
       <Stack.Screen name="Chat" component={Chat} options={chatScreenOption} />
+      <Stack.Screen name="UserInfo" component={UserInfo} options={userInfoScreenActions} />
+      <Stack.Screen
+        name="StartConversation"
+        component={StartConversation}
+        options={startConversationScreenOptions}
+      />
     </Stack.Navigator>
   );
 }
@@ -123,7 +135,7 @@ const DrawerStack = () => {
         }}
       />
       <Drawer.Screen
-        name="Settings"
+        name="SettingsStackNavigator"
         label=""
         component={SettingsStackNavigator}
         options={{

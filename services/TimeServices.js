@@ -7,7 +7,6 @@ export function formatMessageTimestamp(timestamp, forHeader = null) {
 
   const lastSeenBeautifulDate =
     date.getDate() + "/" + (date.getMonth() + 1) + "/" + date.getFullYear();
-
   const isYesterday = today.setDate(today.getDate() - 1) == date;
 
   // return date.toLocaleTimeString().slice(0, 12);
@@ -20,6 +19,7 @@ export function formatMessageTimestamp(timestamp, forHeader = null) {
       new Date(dateFormat1).getTime() == new Date(dateFormat2).getTime(),
       lastSeenBeautifulDate,
       isYesterday,
+      dateFormat1 == dateFormat2,
     ];
   } else {
     return betterTime;

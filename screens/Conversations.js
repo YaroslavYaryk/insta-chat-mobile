@@ -5,6 +5,8 @@ import {
   StyleSheet,
   FlatList,
   TouchableOpacity,
+  ActivityIndicator,
+  RefreshControl,
 } from "react-native";
 import Colors from "../constants/Colors";
 import { HeaderButtons, Item } from "react-navigation-header-buttons";
@@ -12,6 +14,8 @@ import { MaterialIcons } from "@expo/vector-icons";
 import CustomHeaderButton from "../components/CustomHeaderButton";
 import { Feather } from "@expo/vector-icons";
 import { Ionicons } from "@expo/vector-icons";
+
+import { useIsFocused } from "@react-navigation/native";
 
 import { JUST_HOST, PORT } from "../config/server";
 
@@ -28,7 +32,7 @@ export const Conversations = (props) => {
   const unreadMessages = useSelector(
     (state) => state.conversations.unreadMessages
   );
-  console.log(user);
+  const [query, setQuery] = useState(0);
 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState();
@@ -44,6 +48,8 @@ export const Conversations = (props) => {
   //   console.log("open")
   // }
   // console.log(ws)
+
+  const isFocused = useIsFocused();
 
   const { readyState, sendJsonMessage } = useWebSocket(
     user ? `ws://${JUST_HOST}:${PORT}/conversations/` : null,
@@ -63,6 +69,10 @@ export const Conversations = (props) => {
           case "online_user_list":
             dispatch(usersActions.SetActiveUsers(data.users));
             break;
+          case "new_conversation":
+            setQuery(Math.random() + Math.random() + Math.random());
+            break;
+
           case "unread_messages":
             // dispatch()
             dispatch(
@@ -139,7 +149,9 @@ export const Conversations = (props) => {
             dispatch(conversationActions.deleteUnreadMessage(data));
             break;
           case "user_join":
+            console.log(data.user, "here");
             dispatch(usersActions.addUserToActive(data.user));
+
             break;
           case "user_leave":
             dispatch(usersActions.deleteUserFromActive(data.user));
@@ -172,7 +184,7 @@ export const Conversations = (props) => {
 
   useEffect(() => {
     loadConversations();
-  }, [dispatch, loadConversations]);
+  }, [dispatch, loadConversations, isFocused, query]);
 
   const handleSelectChat = (username) => {
     const convName = createConversationName(username);
@@ -181,10 +193,38 @@ export const Conversations = (props) => {
     });
   };
 
+  const onRefresh = () => {
+    loadConversations();
+  };
+
+  const ItemSeparatorView = () => {
+    return (
+      // Flat List Item Separator
+
+      <View
+        style={{
+          height: 0.5,
+
+          width: "100%",
+
+          backgroundColor: "#C8C8C8",
+        }}
+      />
+    );
+  };
+
   if (conversations.length == 0) {
     return (
       <View style={styles.centered}>
         <Text style={{ color: Colors.text }}>You dont have conversations</Text>
+      </View>
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <View style={styles.centered}>
+        <ActivityIndicator size="large" color={Colors.primary} />
       </View>
     );
   }
@@ -196,6 +236,8 @@ export const Conversations = (props) => {
         // ref={ref}
         data={conversations}
         keyExtractor={(item) => item.id}
+        ItemSeparatorComponent={ItemSeparatorView}
+        enableEmptySections={true}
         renderItem={(itemData) => (
           <View key={Math.random() + Math.random()} style={{ marginBottom: 5 }}>
             <TouchableOpacity
@@ -206,6 +248,7 @@ export const Conversations = (props) => {
               <ConversationItem
                 item={itemData.item}
                 unreadMessages={unreadMessages}
+                activeUsers={activeUsers}
                 // onSelect={handleSelectChat}
                 //  handleEdit={() => {
                 //     props.navigation.navigate("EditProject", {
@@ -219,6 +262,13 @@ export const Conversations = (props) => {
             </TouchableOpacity>
           </View>
         )}
+        refreshControl={
+          <RefreshControl
+            //refresh control used for the Pull to Refresh
+            refreshing={isLoading}
+            onRefresh={onRefresh}
+          />
+        }
       />
     </View>
   );
@@ -260,7 +310,9 @@ export const screenOptions = (navData) => {
           icon={Feather}
           size={20}
           iconName={Platform.OS === "android" ? "search" : "search"}
-          onPress={() => {}}
+          onPress={() => {
+            navData.navigation.navigate("StartConversation");
+          }}
         />
       </HeaderButtons>
     ),

@@ -4,11 +4,15 @@ import {
   DELETE_USER_FROM_ACTIVE,
   FETCH_USER_DATA,
   CHANGE_USER_DATA,
+  FETCH_ALL_USERS,
+  FETCH_USER_INFO_TO_WATCH,
 } from "../actions/usersActions";
 
 const initialState = {
   activeUsers: [],
+  watchedUserInfo: {},
   userData: {},
+  allUsers: [],
   //    projectReports: [],
 };
 
@@ -39,6 +43,16 @@ const usersReducer = (state = initialState, action) => {
       return {
         ...state,
         userData: action.user,
+      };
+    case FETCH_ALL_USERS:
+      return {
+        ...state,
+        allUsers: action.users,
+      };
+    case FETCH_USER_INFO_TO_WATCH:
+      return {
+        ...state,
+        watchedUserInfo: action.user,
       };
   }
   return state;

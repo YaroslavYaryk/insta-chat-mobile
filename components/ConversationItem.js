@@ -2,11 +2,14 @@ import React from "react";
 import { View, Text, Image, StyleSheet } from "react-native";
 import Colors from "../constants/Colors";
 import { formatMessageTimestamp } from "../services/TimeServices";
+import { Entypo } from "@expo/vector-icons";
 
 export const ConversationItem = (props) => {
   const messageCount = props.unreadMessages.find(
     (el) => el.name == props.item.name
   )?.count;
+
+  var userOnline = props.activeUsers.includes(props.item.other_user.username);
 
   return (
     <View
@@ -18,7 +21,7 @@ export const ConversationItem = (props) => {
       }}
     >
       <View style={{ flexDirection: "row", alignItems: "center" }}>
-        <View style={{ height: 55, width: 55 }}>
+        <View style={{ height: 55, width: 55, position: "relative" }}>
           {props.item.other_user.image ? (
             <Image
               style={{
@@ -41,6 +44,13 @@ export const ConversationItem = (props) => {
               source={require("../assets/man.png")}
             />
           )}
+          <View style={{ position: "absolute", bottom: -18, right: -18 }}>
+            <Entypo
+              name="dot-single"
+              size={40}
+              color={userOnline ? "green" : "grey"}
+            />
+          </View>
         </View>
         <View style={{ marginLeft: 10 }}>
           <View>
@@ -50,7 +60,7 @@ export const ConversationItem = (props) => {
               {props.item.other_user.username}
             </Text>
             <Text style={{ color: Colors.text, marginTop: 8 }}>
-              {props.item.last_message.content ? (
+              {props.item.last_message && props.item.last_message.content ? (
                 props.item.last_message.content.toString().length > 20 ? (
                   <Text
                     style={{ fontSize: 14 }}
@@ -71,11 +81,14 @@ export const ConversationItem = (props) => {
             </Text>
           </View>
         </View>
-        <View style={{ position: "absolute", bottom: 5, right: 0 }}>
-          <Text style={{ color: Colors.text }}>
-            {formatMessageTimestamp(props.item.last_message.timestamp)}
-          </Text>
-        </View>
+        {props.item.last_message && (
+          <View style={{ position: "absolute", bottom: 5, right: 0 }}>
+            <Text style={{ color: Colors.text }}>
+              {formatMessageTimestamp(props.item.last_message.timestamp)}
+            </Text>
+          </View>
+        )}
+
         {props.unreadMessages &&
           props.unreadMessages.find((el) => el.name == props.item.name) &&
           props.unreadMessages.find((el) => el.name == props.item.name).count >

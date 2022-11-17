@@ -5,6 +5,8 @@ export const ADD_USER_TO_ACTIVE = "ADD_USER_TO_ACTIVE";
 export const DELETE_USER_FROM_ACTIVE = "DELETE_USER_FROM_ACTIVE";
 export const FETCH_USER_DATA = "FETCH_USER_DATA";
 export const CHANGE_USER_DATA = "CHANGE_USER_DATA";
+export const FETCH_ALL_USERS = "FETCH_ALL_USERS";
+export const FETCH_USER_INFO_TO_WATCH = "FETCH_USER_INFO_TO_WATCH";
 
 export const SetActiveUsers = (data) => {
   try {
@@ -144,6 +146,82 @@ export const changeUserData = (
 
       dispatch({
         type: CHANGE_USER_DATA,
+        user: user,
+      });
+    };
+  } catch (err) {
+    throw err;
+  }
+};
+
+export const fetchAllUsers = () => {
+  try {
+    return async (dispatch, getState) => {
+      //  var token = getState().auth.token;
+      var token = getState().auth.token;
+      const response = await fetch(`${HOST}:${PORT}/users/api/all/`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          "Access-Control-Allow-Origin": "*",
+          Authorization: `Token ${token}`,
+        },
+      });
+
+      const resData = await response.json();
+      var users = [];
+      for (const key in resData) {
+        users.push(
+          new UserModel(
+            resData[key].id,
+            resData[key].username,
+            resData[key].email,
+            resData[key].first_name,
+            resData[key].last_name,
+            resData[key].image
+          )
+        );
+      }
+
+      dispatch({
+        type: FETCH_ALL_USERS,
+        users: users,
+      });
+    };
+  } catch (err) {
+    throw err;
+  }
+};
+
+export const loadUserInfo = (username) => {
+  try {
+    return async (dispatch, getState) => {
+      //  var token = getState().auth.token;
+      var token = getState().auth.token;
+      const response = await fetch(
+        `${HOST}:${PORT}/users/api/one/${username}/`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            "Access-Control-Allow-Origin": "*",
+            Authorization: `Token ${token}`,
+          },
+        }
+      );
+
+      const resData = await response.json();
+      var user = new UserModel(
+        resData.id,
+        resData.username,
+        resData.email,
+        resData.first_name,
+        resData.last_name,
+        resData.image
+      );
+
+      dispatch({
+        type: FETCH_USER_INFO_TO_WATCH,
         user: user,
       });
     };
