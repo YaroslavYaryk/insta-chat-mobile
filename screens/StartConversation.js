@@ -28,7 +28,7 @@ export const StartConversation = (props) => {
   const user = useSelector((state) => state.auth);
 
   const allUsers = useSelector((state) => state.users.allUsers);
-  const [userQuery, setUserQuery] = useState(allUsers);
+  const [userQuery, setUserQuery] = useState([]);
 
   const [inputValue, setInputValue] = useState("");
 
@@ -59,7 +59,12 @@ export const StartConversation = (props) => {
 
   useEffect(() => {
     LoadUsers();
+    setUserQuery(allUsers);
   }, [dispatch, LoadUsers, isFocused]);
+
+  useEffect(() => {
+    setUserQuery(allUsers);
+  }, [allUsers]);
 
   const handleSelectChat = (username) => {
     const convName = createConversationName(username);

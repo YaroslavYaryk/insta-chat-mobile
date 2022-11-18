@@ -8,25 +8,25 @@ import {
   Image,
   ScrollView,
   ActivityIndicator,
+  Dimensions,
 } from "react-native";
 import Colors from "../constants/Colors";
-import { HeaderButtons, Item } from "react-navigation-header-buttons";
-import { MaterialIcons } from "@expo/vector-icons";
-import CustomHeaderButton from "../components/CustomHeaderButton";
-import { Feather } from "@expo/vector-icons";
-import { Ionicons } from "@expo/vector-icons";
-import Input from "../components/UI/Input";
-import { JUST_HOST, PORT } from "../config/server";
+
 import AwesomeAlert from "react-native-awesome-alerts";
 import * as conversationActions from "../store/actions/conversationActions";
 import { useDispatch, useSelector } from "react-redux";
 import * as userActions from "../store/actions/usersActions";
+import CustomModal from "../components/CustomModal";
+import { FontAwesome } from "@expo/vector-icons";
+
+const { width, height } = Dimensions.get("window");
 
 export const UserInfo = (props) => {
   const { username, convName } = props.route.params;
   const userData = useSelector((state) => state.users.watchedUserInfo);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState();
+  const [imagePreview, setImagePreview] = useState("");
 
   const [visible, setVisible] = useState(false);
 
@@ -99,21 +99,27 @@ export const UserInfo = (props) => {
         />
       </View>
       <ScrollView>
-        <View style={styles.imageBlock}>
-          <View style={styles.logoContainer}>
-            {userData.image ? (
-              <Image
-                source={{ uri: userData.image }}
-                style={{ width: "100%", height: "100%", borderRadius: 100 }}
-              />
-            ) : (
-              <Image
-                source={require("../assets/man.png")}
-                style={{ width: "100%", height: "100%" }}
-              />
-            )}
+        <TouchableOpacity
+          onPress={() => {
+            setImagePreview(true);
+          }}
+        >
+          <View style={styles.imageBlock}>
+            <View style={styles.logoContainer}>
+              {userData.image ? (
+                <Image
+                  source={{ uri: userData.image }}
+                  style={{ width: "100%", height: "100%", borderRadius: 100 }}
+                />
+              ) : (
+                <Image
+                  source={require("../assets/man.png")}
+                  style={{ width: "100%", height: "100%" }}
+                />
+              )}
+            </View>
           </View>
-        </View>
+        </TouchableOpacity>
 
         <View style={styles.input}>
           <Text style={styles.item}>{userData.first_name}</Text>
@@ -144,6 +150,53 @@ export const UserInfo = (props) => {
       <TouchableOpacity style={[styles.login]} onPress={deleteConversation}>
         <Text style={styles.loginLabel}>Delete conversation</Text>
       </TouchableOpacity>
+      {imagePreview && (
+        <CustomModal
+          isOpen={imagePreview}
+          close={() => {
+            setImagePreview(false);
+          }}
+        >
+          <View
+            style={{
+              height: height,
+              width: width,
+              borderColor: "#8E8E8E",
+              backgroundColor: "rgba(46,55,64,0.95)",
+            }}
+          >
+            {userData.image ? (
+              <Image
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  resizeMode: "center",
+                  // borderRadius: "50%",
+                  // borderRadius: 100,
+                }}
+                source={{
+                  uri: userData.image,
+                }}
+              />
+            ) : (
+              <Image
+                source={require("../assets/man.png")}
+                style={{ width: "100%", height: "100%", resizeMode: "center" }}
+              />
+            )}
+            <View style={{ position: "absolute", top: 0, right: 10 }}>
+              <FontAwesome
+                name="times"
+                size={40}
+                color="grey"
+                onPress={() => {
+                  setImagePreview(false);
+                }}
+              />
+            </View>
+          </View>
+        </CustomModal>
+      )}
     </View>
   );
 };

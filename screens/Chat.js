@@ -16,6 +16,8 @@ import {
   TextInput,
   Dimensions,
   Image,
+  BackHandler,
+  Alert,
 } from "react-native";
 import Colors from "../constants/Colors";
 import { HeaderButtons, Item } from "react-navigation-header-buttons";
@@ -30,7 +32,10 @@ import { FontAwesome } from "@expo/vector-icons";
 import Lightbox from "react-native-lightbox";
 import { Octicons } from "@expo/vector-icons";
 import { JUST_HOST, PORT, HOST } from "../config/server";
-
+import {
+  createNativeStackNavigator,
+  HeaderBack,
+} from "@react-navigation/native-stack";
 import useWebSocket from "react-use-websocket";
 import { useDispatch, useSelector } from "react-redux";
 import * as conversationActions from "../store/actions/conversationActions";
@@ -918,6 +923,26 @@ export const screenOptions = (navData) => {
           </View>
         )}
       </View>
+    ),
+    headerLeft: () => (
+      <HeaderButtons HeaderButtonComponent={CustomHeaderButton}>
+        <Item
+          style={{
+            position: "absolute",
+            left: -70,
+            top: -10,
+            backgroundColor: Colors.background,
+          }}
+          title="dots"
+          color={Colors.text}
+          icon={Ionicons}
+          size={26}
+          iconName="arrow-back"
+          onPress={() => {
+            navData.navigation.navigate("Conversations");
+          }}
+        />
+      </HeaderButtons>
     ),
     headerRight: () => (
       <HeaderButtons HeaderButtonComponent={CustomHeaderButton}>
