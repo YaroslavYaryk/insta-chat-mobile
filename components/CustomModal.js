@@ -52,19 +52,10 @@ const CustomModal = (props) => {
 export default CustomModal;
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: Colors.background,
-  },
   centeredView: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
     marginTop: 22,
-  },
-  textHeader: {
-    fontSize: 12,
-    fontWeight: "400",
-    color: Colors.text,
   },
 });

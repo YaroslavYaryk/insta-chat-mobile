@@ -8,6 +8,7 @@ import {
 } from "react-native";
 import Colors from "../../constants/Colors";
 import { Ionicons } from "@expo/vector-icons";
+import { useTheme } from "@react-navigation/native";
 
 const INPUT_CHANGE = "INPUT_CHANGE";
 const INPUT_BLUR = "INPUT_BLUR";
@@ -31,6 +32,8 @@ const inputReducer = (state, action) => {
 };
 
 const Input = (props) => {
+  const { colors } = useTheme();
+
   const [inputState, dispatch] = useReducer(inputReducer, {
     value: props.initialValue ? props.initialValue : "",
     isValid: props.initiallyValid,
@@ -117,7 +120,13 @@ const Input = (props) => {
     <View style={styles.formControl}>
       <Text style={styles.label}>{props.label}</Text>
       <TextInput
-        style={[styles.input, { height: props.height ? props.height : null }]}
+        style={[
+          styles.input,
+          {
+            height: props.height ? props.height : null,
+            borderBottomColor: colors.headerBold,
+          },
+        ]}
         {...props}
         secureTextEntry={hiddenText}
         value={inputState.value}
@@ -167,7 +176,7 @@ const styles = StyleSheet.create({
   input: {
     paddingHorizontal: 2,
     paddingVertical: 0,
-    borderBottomColor: Colors.headerBold,
+
     borderBottomWidth: 1,
   },
   errorContainer: {

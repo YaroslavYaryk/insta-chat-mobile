@@ -1,4 +1,4 @@
-import React, { useEffect, useCallback, useState } from "react";
+import React, { useEffect, useCallback, useState, useRef } from "react";
 import {
   View,
   Text,
@@ -10,7 +10,7 @@ import {
 } from "react-native";
 import Colors from "../constants/Colors";
 import { HeaderButtons, Item } from "react-navigation-header-buttons";
-import { MaterialIcons } from "@expo/vector-icons";
+import { FontAwesome, MaterialIcons } from "@expo/vector-icons";
 import CustomHeaderButton from "../components/CustomHeaderButton";
 import { Feather } from "@expo/vector-icons";
 import { Ionicons } from "@expo/vector-icons";
@@ -25,7 +25,25 @@ import * as conversationActions from "../store/actions/conversationActions";
 import * as usersActions from "../store/actions/usersActions";
 import { ConversationItem } from "../components/ConversationItem";
 
+import * as Device from "expo-device";
+import * as Notifications from "expo-notifications";
+
+import { useTheme } from "@react-navigation/native";
+
+import registerForPushNotificationsAsync from "../config/registerForPushNotificationsAsync";
+import schedulePushNotification from "../config/schedulePushNotifications";
+
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldPlaySound: true,
+    shouldSetBadge: true,
+  }),
+});
+
 export const Conversations = (props) => {
+  const { colors } = useTheme();
+
   const user = useSelector((state) => state.auth);
   const [isOpen, setIsOpen] = useState(false);
   const activeUsers = useSelector((state) => state.users.activeUsers);
@@ -36,6 +54,12 @@ export const Conversations = (props) => {
 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState();
+
+  // notifications
+  const [expoPushToken, setExpoPushToken] = useState("");
+  const [notification, setNotification] = useState(false);
+  const notificationListener = useRef();
+  const responseListener = useRef();
 
   const dispatch = useDispatch();
 
@@ -116,6 +140,11 @@ export const Conversations = (props) => {
             if (data.from_user == user?.username) {
               break;
             }
+            // pushNotification(
+            //   "New Message",
+            //   `${data.message.from_user.username}: ${data.message.content}`,
+            //   getConvNameByid(data.message.conversation)
+            // );
             // var oldMessages = [...unreadMessages];
             // const convName = data.name;
             // var index = oldMessages.findIndex((el) => el.name === convName);
@@ -171,6 +200,48 @@ export const Conversations = (props) => {
     return `${namesAlph[0]}__${namesAlph[1]}`;
   }
 
+  const pushNotification = useCallback(async (title, body, data) => {
+    await schedulePushNotification(title, body, data);
+  });
+
+  const getConvNameByid = (id) => {
+    var conv = conversations.find((el) => el.id === id);
+    if (conv) {
+      return conv.name;
+    }
+  };
+
+  // notifications
+  useEffect(() => {
+    registerForPushNotificationsAsync().then((token) =>
+      setExpoPushToken(token)
+    );
+
+    notificationListener.current =
+      Notifications.addNotificationReceivedListener((notification) => {
+        console.log("here 1");
+        setNotification(notification);
+      });
+
+    responseListener.current =
+      Notifications.addNotificationResponseReceivedListener((response) => {
+        console.log("here 2");
+        var convName = response.notification.request.content.data.data;
+        if (convName) {
+          props.navigation.navigate("Chat", {
+            conversationName: convName,
+          });
+        }
+      });
+
+    return () => {
+      Notifications.removeNotificationSubscription(
+        notificationListener.current
+      );
+      Notifications.removeNotificationSubscription(responseListener.current);
+    };
+  }, []);
+
   const loadConversations = useCallback(async () => {
     setError(null);
     setIsLoading(true);
@@ -206,8 +277,6 @@ export const Conversations = (props) => {
           height: 0.5,
 
           width: "100%",
-
-          backgroundColor: "#C8C8C8",
         }}
       />
     );
@@ -215,22 +284,22 @@ export const Conversations = (props) => {
 
   if (conversations.length == 0) {
     return (
-      <View style={styles.centered}>
-        <Text style={{ color: Colors.text }}>You dont have conversations</Text>
+      <View style={[styles.centered, { backgroundColor: colors.background }]}>
+        <Text style={{ color: colors.text }}>You dont have conversations</Text>
       </View>
     );
   }
 
   if (isLoading) {
     return (
-      <View style={styles.centered}>
-        <ActivityIndicator size="large" color={Colors.primary} />
+      <View style={[styles.centered, { backgroundColor: colors.background }]}>
+        <ActivityIndicator size="large" color={colors.primary} />
       </View>
     );
   }
 
   return (
-    <View style={[styles.container, {}]}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       <FlatList
         // onScroll={scrollHandler}
         // ref={ref}
@@ -279,15 +348,22 @@ export const screenOptions = (navData) => {
   if (navData.route.params) {
     forwardedMessageId = navData.route.params.forwardedMessageId;
   }
+  const { colors } = useTheme();
 
   return {
-    headerTitle: forwardedMessageId ? "Forward to..." : "Instachat",
+    headerTitle: () => (
+      <View>
+        <Text style={{ color: colors.text, fontSize: 22, fontWeight: "700" }}>
+          {forwardedMessageId ? "Forward to..." : "Instachat"}
+        </Text>
+      </View>
+    ),
     headerLeft: () => (
       <HeaderButtons HeaderButtonComponent={CustomHeaderButton}>
         <Item
           style={{ marginLeft: -20, padding: 0 }}
           title="search"
-          color="red"
+          color={colors.text}
           icon={Ionicons}
           size={35}
           iconName={
@@ -306,8 +382,8 @@ export const screenOptions = (navData) => {
         <Item
           style={{ marginRight: -20, padding: 0 }}
           title="search"
-          color="red"
-          icon={Feather}
+          color={colors.text}
+          icon={FontAwesome}
           size={20}
           iconName={Platform.OS === "android" ? "search" : "search"}
           onPress={() => {
@@ -322,11 +398,10 @@ export const screenOptions = (navData) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.background,
   },
   centered: {
     flex: 1,
-    backgroundColor: Colors.background,
+
     justifyContent: "center",
     alignItems: "center",
   },

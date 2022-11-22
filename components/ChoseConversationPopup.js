@@ -20,12 +20,23 @@ import { useDispatch, useSelector } from "react-redux";
 import * as conversationActions from "../store/actions/conversationActions";
 import * as usersActions from "../store/actions/usersActions";
 import { ConversationItem } from "../components/ConversationItem";
+import { useTheme } from "@react-navigation/native";
 
 const ChoseConversationPopup = (props) => {
-  const user = useSelector((state) => state.auth);
+  const { colors } = useTheme();
 
-  const conversations = useSelector(
-    (state) => state.conversations.conversations
+  const convParticipants = props.conversationName.split("__");
+
+  const user = useSelector((state) => state.auth);
+  const otherUser =
+    convParticipants[0] == user.username
+      ? convParticipants[1]
+      : convParticipants[0];
+
+  const conversations = useSelector((state) =>
+    state.conversations.conversations.filter(
+      (el) => el.other_user.username !== otherUser
+    )
   );
 
   function createConversationName(username) {
@@ -33,8 +44,20 @@ const ChoseConversationPopup = (props) => {
     return `${namesAlph[0]}__${namesAlph[1]}`;
   }
 
+  if (conversations.length == 0) {
+    return (
+      <View
+        style={[styles.centered, { backgroundColor: colors.backgroundLighter }]}
+      >
+        <Text style={{ color: colors.text }}>You dont have conversations</Text>
+      </View>
+    );
+  }
+
   return (
-    <View style={[styles.container, {}]}>
+    <View
+      style={[styles.container, { backgroundColor: colors.backgroundLighter }]}
+    >
       <FlatList
         // onScroll={scrollHandler}
         // ref={ref}
@@ -51,6 +74,7 @@ const ChoseConversationPopup = (props) => {
               <ConversationItem
                 item={itemData.item}
                 unreadMessages={[]}
+                activeUsers={[]}
                 // onSelect={handleSelectChat}
                 //  handleEdit={() => {
                 //     props.navigation.navigate("EditProject", {
@@ -72,9 +96,15 @@ const ChoseConversationPopup = (props) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.backgroundLighter,
+
     borderRadius: 20,
     overflow: "hidden",
+  },
+  centered: {
+    flex: 1,
+
+    justifyContent: "center",
+    alignItems: "center",
   },
 });
 

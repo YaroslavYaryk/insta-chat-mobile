@@ -19,9 +19,14 @@ import * as userActions from "../store/actions/usersActions";
 import CustomModal from "../components/CustomModal";
 import { FontAwesome } from "@expo/vector-icons";
 
+import { useTheme } from "@react-navigation/native";
+import { color } from "react-native-reanimated";
+
 const { width, height } = Dimensions.get("window");
 
 export const UserInfo = (props) => {
+  const { colors } = useTheme();
+
   const { username, convName } = props.route.params;
   const userData = useSelector((state) => state.users.watchedUserInfo);
   const [isLoading, setIsLoading] = useState(false);
@@ -71,14 +76,14 @@ export const UserInfo = (props) => {
 
   if (isLoading) {
     return (
-      <View style={styles.centered}>
-        <ActivityIndicator size="large" color={Colors.primary} />
+      <View style={[styles.centered, { backgroundColor: colors.background }]}>
+        <ActivityIndicator size="large" color={colors.primary} />
       </View>
     );
   }
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       <View>
         <AwesomeAlert
           show={visible}
@@ -121,34 +126,64 @@ export const UserInfo = (props) => {
           </View>
         </TouchableOpacity>
 
-        <View style={styles.input}>
-          <Text style={styles.item}>{userData.first_name}</Text>
+        <View
+          style={[
+            styles.input,
+            { color: colors.text, borderColor: colors.inputBorder },
+          ]}
+        >
+          <Text style={{ color: colors.text }}>{userData.first_name}</Text>
           <View style={styles.itemLabelBlock}>
-            <Text style={styles.itemLabel}>First name</Text>
+            <Text style={[styles.itemLabel, { color: colors.text }]}>
+              First name
+            </Text>
           </View>
         </View>
-        <View style={styles.input}>
-          <Text style={styles.item}>{userData.last_name}</Text>
+        <View
+          style={[
+            styles.input,
+            { color: colors.text, borderColor: colors.inputBorder },
+          ]}
+        >
+          <Text style={{ color: colors.text }}>{userData.last_name}</Text>
           <View style={styles.itemLabelBlock}>
-            <Text style={styles.itemLabel}>Last name</Text>
+            <Text style={[styles.itemLabel, { color: colors.text }]}>
+              Last name
+            </Text>
           </View>
         </View>
-        <View style={styles.input}>
-          <Text style={styles.item}>{userData.username}</Text>
+        <View
+          style={[
+            styles.input,
+            { color: colors.text, borderColor: colors.inputBorder },
+          ]}
+        >
+          <Text style={{ color: colors.text }}>{userData.username}</Text>
           <View style={styles.itemLabelBlock}>
-            <Text style={styles.itemLabel}>Username</Text>
+            <Text style={[styles.itemLabel, { color: colors.text }]}>
+              Username
+            </Text>
           </View>
         </View>
-        <View style={styles.input}>
-          <Text style={styles.item}>{userData.email}</Text>
+        <View
+          style={[
+            styles.input,
+            { color: colors.text, borderColor: colors.inputBorder },
+          ]}
+        >
+          <Text style={{ color: colors.text }}>{userData.email}</Text>
           <View style={styles.itemLabelBlock}>
-            <Text style={styles.itemLabel}>Email</Text>
+            <Text style={[styles.itemLabel, { color: colors.text }]}>
+              Email
+            </Text>
           </View>
         </View>
       </ScrollView>
 
       <TouchableOpacity style={[styles.login]} onPress={deleteConversation}>
-        <Text style={styles.loginLabel}>Delete conversation</Text>
+        <Text style={[styles.loginLabel, { color: colors.text }]}>
+          Delete conversation
+        </Text>
       </TouchableOpacity>
       {imagePreview && (
         <CustomModal
@@ -202,14 +237,20 @@ export const UserInfo = (props) => {
 };
 
 export const screenOptions = (navData) => {
+  const { colors } = useTheme();
   return {
-    headerTitle: navData.route.params.username,
+    headerTitle: () => (
+      <View>
+        <Text style={{ color: colors.text, fontSize: 22, fontWeight: "700" }}>
+          {navData.route.params.username}
+        </Text>
+      </View>
+    ),
   };
 };
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: Colors.background,
     flex: 1,
     flexDirection: "column",
     justifyContent: "center",
@@ -218,10 +259,10 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: Colors.background,
   },
   imageBlock: {
     alignItems: "center",
+    marginTop: 10,
   },
   logoContainer: {
     // flexDirection: "row",
@@ -229,14 +270,12 @@ const styles = StyleSheet.create({
     height: 150,
   },
   input: {
-    borderColor: "#ccc",
     borderRadius: 8,
     borderWidth: 1,
     fontSize: 16,
     marginHorizontal: 24,
     marginVertical: 10,
     padding: 12,
-    color: Colors.text,
   },
   login: {
     backgroundColor: "#FFA86F",
@@ -247,7 +286,6 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   loginLabel: {
-    color: "#fff",
     fontWeight: "bold",
     textAlign: "center",
     textTransform: "uppercase",
@@ -269,15 +307,11 @@ const styles = StyleSheet.create({
   inputContainer: {
     marginHorizontal: 20,
   },
-  item: {
-    color: Colors.text,
-  },
   itemLabelBlock: {
     position: "absolute",
     left: 5,
   },
   itemLabel: {
-    color: Colors.text,
     fontSize: 10,
   },
 });

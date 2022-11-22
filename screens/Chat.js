@@ -47,6 +47,8 @@ import * as FileSystem from "expo-file-system";
 import CustomModal from "../components/CustomModal";
 import { useFocusEffect, useIsFocused } from "@react-navigation/native";
 
+import { useTheme } from "@react-navigation/native";
+
 import ChoseConversationPopup from "../components/ChoseConversationPopup";
 import { formatMessageTimestamp } from "../services/TimeServices";
 
@@ -59,6 +61,8 @@ const VIEWABILITY_CONFIG = {
 const { width, height } = Dimensions.get("window");
 
 export const Chat = (props) => {
+  const { colors } = useTheme();
+
   const { conversationName } = props.route.params;
 
   const user = useSelector((state) => state.auth);
@@ -470,7 +474,7 @@ export const Chat = (props) => {
   }
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       <FlatList
         ref={flatListRef}
         data={messageHistory}
@@ -499,12 +503,12 @@ export const Chat = (props) => {
         viewabilityConfig={VIEWABILITY_CONFIG}
       />
       {isEdit && (
-        <View style={{ padding: 10, backgroundColor: "#2b5278" }}>
+        <View style={{ padding: 10, backgroundColor: colors.messFromMe }}>
           <View style={{ flexDirection: "row", alignItems: "center" }}>
             <MaterialIcons name="edit" size={20} color="#B2B2B2" />
             <View style={{ marginLeft: 10, width: "85%" }}>
               {getMessageById(editedId).content ? (
-                <Text style={{ color: Colors.text }}>
+                <Text style={{ color: colors.text }}>
                   {getMessageById(editedId).content}
                 </Text>
               ) : (
@@ -546,12 +550,12 @@ export const Chat = (props) => {
         </View>
       )}
       {isReply && (
-        <View style={{ padding: 10, backgroundColor: "#2b5278" }}>
+        <View style={{ padding: 10, backgroundColor: colors.messFromMe }}>
           <View style={{ flexDirection: "row", alignItems: "center" }}>
-            <Octicons name="reply" size={20} color="#B2B2B2" />
+            <Octicons name="reply" size={20} color={colors.inputColor} />
             <View style={{ marginLeft: 10, width: "85%" }}>
               {getMessageById(repliedMessageId).content ? (
-                <Text style={{ color: Colors.text }}>
+                <Text style={{ color: colors.text }}>
                   {getMessageById(repliedMessageId).content}
                 </Text>
               ) : (
@@ -581,7 +585,7 @@ export const Chat = (props) => {
             <FontAwesome5
               name="times"
               size={24}
-              color="#B2B2B2"
+              color={colors.inputColor}
               style={{ minWidth: 50 }}
               onPress={() => {
                 {
@@ -593,7 +597,7 @@ export const Chat = (props) => {
         </View>
       )}
       {filesBase64.length > 0 && (
-        <View style={{ borderWidth: 1, borderColor: "#69bbfa", padding: 5 }}>
+        <View style={{ borderWidth: 1, borderColor: colors.read, padding: 5 }}>
           <View style={{ flexDirection: "row", alignItems: "center" }}>
             {filesBase64.map((el) => (
               <View
@@ -637,13 +641,13 @@ export const Chat = (props) => {
           flexDirection: "row",
           alignItems: "center",
           padding: 5,
-          borderBottomRightRadius: 10,
-          borderBottomLeftRadius: 10,
-          backgroundColor: "#2E3740",
+          // borderBottomRightRadius: 10,
+          // borderBottomLeftRadius: 10,
+          backgroundColor: colors.inputBg,
         }}
       >
         <View style={{ minWidth: 35, alignItems: "center" }}>
-          <FontAwesome5 name="smile" size={24} color="#989DA1" />
+          <FontAwesome5 name="smile" size={24} color={colors.inputColor} />
         </View>
         <View
           style={{
@@ -652,11 +656,11 @@ export const Chat = (props) => {
           }}
         >
           <TextInput
-            style={{ padding: 5, color: "white" }}
+            style={{ padding: 5, color: colors.text }}
             onChangeText={handleChangeMessage}
             value={message}
             placeholder="Write a message..."
-            placeholderTextColor="#989DA1"
+            placeholderTextColor={colors.inputColor}
           />
         </View>
         {!message && !filesBase64.length > 0 && (
@@ -664,7 +668,7 @@ export const Chat = (props) => {
             <SimpleLineIcons
               name="picture"
               size={24}
-              color="#989DA1"
+              color={colors.inputColor}
               onPress={pickImage}
             />
           </View>
@@ -674,7 +678,7 @@ export const Chat = (props) => {
             <Ionicons
               name="md-send"
               size={24}
-              color="#69bbfa"
+              color={colors.read}
               onPress={() => {
                 handleSubmit("");
               }}
@@ -753,6 +757,7 @@ export const Chat = (props) => {
           >
             <ChoseConversationPopup
               handleSelectChat={handleChooseUserToForward}
+              conversationName={conversationName}
             />
           </View>
         </CustomModal>
@@ -763,6 +768,8 @@ export const Chat = (props) => {
 
 export const screenOptions = (navData) => {
   const { conversation, participants, typing } = navData.route.params;
+
+  const { colors } = useTheme();
 
   // console.log(navData.route.params);
   return {
@@ -814,7 +821,7 @@ export const screenOptions = (navData) => {
                   style={{
                     fontSize: 16,
                     fontWeight: "500",
-                    color: Colors.text,
+                    color: colors.text,
                   }}
                 >
                   {conversation.other_user.username}
@@ -828,7 +835,12 @@ export const screenOptions = (navData) => {
                         conversation.other_user.last_login,
                         true
                       ) ? (
-                        <Text style={[{ marginLeft: 5 }, styles.textHeader]}>
+                        <Text
+                          style={[
+                            { marginLeft: 5, color: colors.text },
+                            styles.textHeader,
+                          ]}
+                        >
                           {<Text>Last seen recently</Text>}
                         </Text>
                       ) : (
@@ -841,13 +853,23 @@ export const screenOptions = (navData) => {
                               alignItems: "center",
                             }}
                           >
-                            <Text style={styles.textHeader}>Seen</Text>
+                            <Text
+                              style={[
+                                styles.textHeader,
+                                { color: colors.text },
+                              ]}
+                            >
+                              Seen
+                            </Text>
                             {formatMessageTimestamp(
                               conversation.other_user.last_login,
                               true
                             )[3] ? (
                               <Text
-                                style={[{ marginLeft: 3 }, styles.textHeader]}
+                                style={[
+                                  { marginLeft: 3, color: colors.text },
+                                  styles.textHeader,
+                                ]}
                               >
                                 yesterday
                               </Text>
@@ -858,7 +880,10 @@ export const screenOptions = (navData) => {
                               <Text></Text>
                             ) : (
                               <Text
-                                style={[{ marginLeft: 3 }, styles.textHeader]}
+                                style={[
+                                  { marginLeft: 3, color: colors.text },
+                                  styles.textHeader,
+                                ]}
                               >
                                 {
                                   formatMessageTimestamp(
@@ -869,7 +894,10 @@ export const screenOptions = (navData) => {
                               </Text>
                             )}
                             <Text
-                              style={[styles.textHeader, { marginLeft: 3 }]}
+                              style={[
+                                styles.textHeader,
+                                { marginLeft: 3, color: colors.text },
+                              ]}
                             >
                               at
                             </Text>
@@ -878,7 +906,7 @@ export const screenOptions = (navData) => {
                             style={{
                               fontSize: 12,
                               fontWeight: "400",
-                              color: Colors.text,
+                              color: colors.text,
                               marginLeft: 3,
                             }}
                           >
@@ -897,7 +925,7 @@ export const screenOptions = (navData) => {
                       style={{
                         fontSize: 10,
                         fontWeight: "400",
-                        color: Colors.text,
+                        color: colors.text,
                       }}
                     >
                       Online
@@ -907,7 +935,7 @@ export const screenOptions = (navData) => {
                       style={{
                         fontSize: 10,
                         fontWeight: "400",
-                        color: Colors.text,
+                        color: colors.text,
                       }}
                     >
                       Typing...
@@ -931,10 +959,10 @@ export const screenOptions = (navData) => {
             position: "absolute",
             left: -70,
             top: -10,
-            backgroundColor: Colors.background,
+            backgroundColor: colors.header,
           }}
           title="dots"
-          color={Colors.text}
+          color={colors.text}
           icon={Ionicons}
           size={26}
           iconName="arrow-back"
@@ -949,7 +977,7 @@ export const screenOptions = (navData) => {
         <Item
           style={{ marginRight: -20, padding: 0 }}
           title="dots"
-          color={Colors.text}
+          color={colors.text}
           icon={MaterialCommunityIcons}
           size={26}
           iconName="dots-vertical"
@@ -963,11 +991,9 @@ export const screenOptions = (navData) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.background,
   },
   textHeader: {
     fontSize: 12,
     fontWeight: "400",
-    color: Colors.text,
   },
 });

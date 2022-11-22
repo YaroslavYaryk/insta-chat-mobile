@@ -114,7 +114,7 @@ export const changeUserData = (
         });
       }
       var token = getState().auth.token;
-      const response = await fetch(`${HOST}:${PORT}/users/api/one/change/`, {
+      const response = await fetch(`${HOST}:${PORT}/users/api/user/change/`, {
         method: "PUT",
         headers: {
           "Content-Type": "multipart/form-data",

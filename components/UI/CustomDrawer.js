@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from "react";
+import React, { useState, useCallback, useEffect, useRef } from "react";
 import {
   View,
   Text,
@@ -8,6 +8,8 @@ import {
   Button,
   StyleSheet,
   ActivityIndicator,
+  Animated,
+  LayoutAnimation,
 } from "react-native";
 import {
   DrawerContentScrollView,
@@ -20,13 +22,64 @@ import * as authActions from "../../store/actions/authActions";
 import { useDispatch, useSelector } from "react-redux";
 import Colors from "../../constants/Colors";
 import * as userActions from "../../store/actions/usersActions";
+import { toggleAnimation } from "../../constants/anumatuion";
+import * as themeActions from "../../store/actions/themeActions";
+
+import {
+  Transition,
+  Transitioning,
+  TransitioningView,
+} from "react-native-reanimated";
+import { useTheme } from "@react-navigation/native";
+
+const transition = (
+  <Transition.Together>
+    <Transition.Out type="scale" durationMs={100} />
+    <Transition.Change interpolation="easeInOut" />
+    <Transition.In type="scale" durationMs={100} delayMs={50} />
+  </Transition.Together>
+);
 
 const CustomDrawer = (props) => {
+  const { colors } = useTheme();
+
   const user = useSelector((state) => state.users.userData);
+
+  const theme = useSelector((state) => state.theme.theme);
+  console.log(useSelector((state) => state.theme));
+
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState();
 
   const dispatch = useDispatch();
+
+  const ref = useRef(null);
+  const [toggled, setToggled] = React.useState(false);
+
+  const toggle = () => setToggled(!toggled);
+
+  const animationController = useRef(new Animated.Value(0)).current;
+
+  const toggleListItem = () => {
+    const config = {
+      duration: 500,
+      toValue: toggled ? 0 : 1,
+      useNativeDriver: true,
+    };
+    Animated.timing(animationController, config).start();
+    LayoutAnimation.configureNext(toggleAnimation);
+    toggle();
+    var mode = "light";
+    if (theme == "light") {
+      mode = "dark";
+    }
+    dispatch(themeActions.changeTheme(mode));
+  };
+
+  const arrowTransform = animationController.interpolate({
+    inputRange: [0, 1],
+    outputRange: ["0deg", "180deg"],
+  });
 
   const loadUserData = useCallback(async () => {
     setError(null);
@@ -45,12 +98,12 @@ const CustomDrawer = (props) => {
 
   if (error) {
     return (
-      <View style={styles.centered}>
+      <View style={[styles.centered, { backgroundColor: colors.background }]}>
         <Text>{error}</Text>
         <Button
           title="Try Again"
           onPress={loadUserData}
-          color={Colors.backgroundLighter}
+          color={colors.backgroundLighter}
         />
       </View>
     );
@@ -58,14 +111,14 @@ const CustomDrawer = (props) => {
 
   if (isLoading) {
     return (
-      <View style={styles.centered}>
-        <ActivityIndicator size="large" color={Colors.primaryColor} />
+      <View style={[styles.centered, { backgroundColor: colors.background }]}>
+        <ActivityIndicator size="large" color={colors.primaryColor} />
       </View>
     );
   }
 
   return (
-    <View style={{ flex: 1, backgroundColor: Colors.background }}>
+    <View style={{ flex: 1, backgroundColor: colors.background }}>
       <DrawerContentScrollView {...props} contentContainerStyle={{}}>
         <ImageBackground
           source={require("../../assets/leaves.jpg")}
@@ -99,7 +152,7 @@ const CustomDrawer = (props) => {
               )}
               <Text
                 style={{
-                  color: "#fff",
+                  color: colors.text,
                   fontSize: 18,
                   marginBottom: 5,
                 }}
@@ -107,9 +160,19 @@ const CustomDrawer = (props) => {
                 {user.first_name} {user.last_name}
               </Text>
             </View>
-            <View>
-              <Feather name="moon" size={24} color={Colors.text} />
-            </View>
+            <Animated.View
+              style={{
+                transform: [{ rotate: arrowTransform }],
+                height: 24,
+              }}
+            >
+              <Feather
+                name={theme == "dark" ? "moon" : "sun"}
+                size={24}
+                color={colors.text}
+                onPress={() => toggleListItem()}
+              />
+            </Animated.View>
           </View>
         </ImageBackground>
         <View style={{ flex: 1, paddingTop: 10 }}>
@@ -125,12 +188,12 @@ const CustomDrawer = (props) => {
           style={{ paddingVertical: 15 }}
         >
           <View style={{ flexDirection: "row", alignItems: "center" }}>
-            <Ionicons name="exit-outline" size={22} color={Colors.text} />
+            <Ionicons name="exit-outline" size={22} color={colors.text} />
             <Text
               style={{
                 fontSize: 15,
                 marginLeft: 5,
-                color: Colors.text,
+                color: colors.text,
               }}
             >
               Sign Out
@@ -147,7 +210,6 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: Colors.background,
   },
 });
 

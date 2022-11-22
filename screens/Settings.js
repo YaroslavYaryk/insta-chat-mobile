@@ -8,6 +8,7 @@ import {
   Image,
   ScrollView,
   ActivityIndicator,
+  RefreshControl,
 } from "react-native";
 import Colors from "../constants/Colors";
 import { HeaderButtons, Item } from "react-navigation-header-buttons";
@@ -23,6 +24,8 @@ import useWebSocket from "react-use-websocket";
 import { useDispatch, useSelector } from "react-redux";
 import * as userActions from "../store/actions/usersActions";
 import * as ImagePicker from "expo-image-picker";
+
+import { useIsFocused, useTheme } from "@react-navigation/native";
 
 const FORM_INPUT_UPDATE = "FORM_INPUT_UPDATE";
 
@@ -50,6 +53,7 @@ const formReducer = (state, action) => {
 };
 
 const Settings = (props) => {
+  const { colors } = useTheme();
   const userData = useSelector((state) => state.users.userData);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState();
@@ -57,6 +61,7 @@ const Settings = (props) => {
   const [userImage, setUserImage] = useState(
     userData.image ? userData.image : ""
   );
+  const isFocused = useIsFocused();
 
   const [visible, setVisible] = useState(false);
 
@@ -70,12 +75,13 @@ const Settings = (props) => {
     } catch (err) {
       setError(err.message);
     }
+    // setUserImage(userData.image);
     setIsLoading(false);
-  }, [dispatch, setError, setIsLoading]);
+  }, [dispatch, setError, setIsLoading, isFocused]);
 
   useEffect(() => {
     loadUserData();
-  }, [dispatch, loadUserData]);
+  }, [dispatch, loadUserData, isFocused]);
 
   useEffect(() => {
     if (error) {
@@ -158,21 +164,34 @@ const Settings = (props) => {
       allowsMultipleSelection: false,
     });
     if (!result.canceled) {
-      console.log(result);
       setUserImage(result.assets[0].uri);
     }
   };
 
+  const ItemSeparatorView = () => {
+    return (
+      // Flat List Item Separator
+
+      <View
+        style={{
+          height: 0.5,
+
+          width: "100%",
+        }}
+      />
+    );
+  };
+
   if (isLoading) {
     return (
-      <View style={styles.centered}>
-        <ActivityIndicator size="large" color={Colors.primary} />
+      <View style={[styles.centered, { backgroundColor: colors.background }]}>
+        <ActivityIndicator size="large" color={colors.primary} />
       </View>
     );
   }
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       <View>
         <AwesomeAlert
           show={visible}
@@ -192,7 +211,17 @@ const Settings = (props) => {
           }}
         />
       </View>
-      <ScrollView>
+      <ScrollView
+        ItemSeparatorComponent={ItemSeparatorView}
+        enableEmptySections={true}
+        refreshControl={
+          <RefreshControl
+            //refresh control used for the Pull to Refresh
+            refreshing={isLoading}
+            onRefresh={loadUserData}
+          />
+        }
+      >
         <View style={styles.imageBlock}>
           <View style={styles.logoContainer}>
             <TouchableOpacity onPress={pickImage}>
@@ -220,8 +249,11 @@ const Settings = (props) => {
           onInputChange={inputChangeHandler}
           initialValue={userData.first_name ? userData.first_name : ""}
           placeholder="First name"
-          style={styles.input}
-          placeholderTextColor={Colors.text}
+          style={[
+            styles.input,
+            { color: colors.text, borderColor: colors.inputBorder },
+          ]}
+          placeholderTextColor={colors.text}
         />
         <Input
           id="lastName"
@@ -233,8 +265,11 @@ const Settings = (props) => {
           onInputChange={inputChangeHandler}
           initialValue={userData.last_name ? userData.last_name : ""}
           placeholder="Last name"
-          style={styles.input}
-          placeholderTextColor={Colors.text}
+          style={[
+            styles.input,
+            { color: colors.text, borderColor: colors.inputBorder },
+          ]}
+          placeholderTextColor={colors.text}
         />
         <Input
           id="username"
@@ -246,8 +281,11 @@ const Settings = (props) => {
           onInputChange={inputChangeHandler}
           initialValue={userData.username ? userData.username : ""}
           placeholder="Username"
-          style={styles.input}
-          placeholderTextColor={Colors.text}
+          style={[
+            styles.input,
+            { color: colors.text, borderColor: colors.inputBorder },
+          ]}
+          placeholderTextColor={colors.text}
         />
         <Input
           id="email"
@@ -260,8 +298,15 @@ const Settings = (props) => {
           onInputChange={inputChangeHandler}
           initialValue={userData.email ? userData.email : ""}
           placeholder="Email"
-          style={[styles.input, { marginBottom: 10 }]}
-          placeholderTextColor={Colors.text}
+          style={[
+            styles.input,
+            {
+              marginBottom: 10,
+              color: colors.text,
+              borderColor: colors.inputBorder,
+            },
+          ]}
+          placeholderTextColor={colors.text}
         />
 
         <TouchableOpacity
@@ -272,7 +317,7 @@ const Settings = (props) => {
           ]}
           onPress={changeUserData}
         >
-          <Text style={styles.loginLabel}>Save</Text>
+          <Text style={[styles.loginLabel, { color: colors.text }]}>Save</Text>
         </TouchableOpacity>
       </ScrollView>
     </View>
@@ -280,6 +325,7 @@ const Settings = (props) => {
 };
 
 export const screenOptions = (navData) => {
+  const { colors } = useTheme();
   return {
     headerTitle: "Settings",
     headerLeft: () => (
@@ -287,7 +333,7 @@ export const screenOptions = (navData) => {
         <Item
           style={{ marginLeft: -20, padding: 0 }}
           title="search"
-          color="red"
+          color={colors.text}
           icon={Ionicons}
           size={35}
           iconName={
@@ -306,7 +352,6 @@ export const screenOptions = (navData) => {
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: Colors.background,
     flex: 1,
     flexDirection: "column",
     justifyContent: "center",
@@ -315,10 +360,10 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: Colors.background,
   },
   imageBlock: {
     alignItems: "center",
+    marginTop: 10,
   },
   logoContainer: {
     // flexDirection: "row",
@@ -326,14 +371,12 @@ const styles = StyleSheet.create({
     height: 150,
   },
   input: {
-    borderColor: "#ccc",
     borderRadius: 8,
     borderWidth: 1,
     fontSize: 16,
     marginHorizontal: 24,
     marginVertical: -8,
     padding: 12,
-    color: Colors.text,
   },
   login: {
     backgroundColor: "#3B82F6",
@@ -344,7 +387,6 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   loginLabel: {
-    color: "#fff",
     fontWeight: "bold",
     textAlign: "center",
     textTransform: "uppercase",

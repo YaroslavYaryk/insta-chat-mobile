@@ -3,8 +3,11 @@ import { View, Text, Image, StyleSheet } from "react-native";
 import Colors from "../constants/Colors";
 import { formatMessageTimestamp } from "../services/TimeServices";
 import { Entypo } from "@expo/vector-icons";
+import { useTheme } from "@react-navigation/native";
 
 export const ConversationItem = (props) => {
+  const { colors } = useTheme();
+
   const messageCount = props.unreadMessages.find(
     (el) => el.name == props.item.name
   )?.count;
@@ -15,7 +18,7 @@ export const ConversationItem = (props) => {
     <View
       style={{
         borderWidth: 1,
-        borderColor: "#435264",
+        borderColor: colors.conversationBorder,
         padding: 10,
         position: "relative",
       }}
@@ -55,11 +58,11 @@ export const ConversationItem = (props) => {
         <View style={{ marginLeft: 10 }}>
           <View>
             <Text
-              style={{ color: Colors.text, fontSize: 17, fontWeight: "600" }}
+              style={{ color: colors.text, fontSize: 17, fontWeight: "600" }}
             >
               {props.item.other_user.username}
             </Text>
-            <Text style={{ color: Colors.text, marginTop: 8 }}>
+            <Text style={{ color: colors.text, marginTop: 8 }}>
               {props.item.last_message && props.item.last_message.content ? (
                 props.item.last_message.content.toString().length > 20 ? (
                   <Text
@@ -83,7 +86,7 @@ export const ConversationItem = (props) => {
         </View>
         {props.item.last_message && (
           <View style={{ position: "absolute", bottom: 5, right: 0 }}>
-            <Text style={{ color: Colors.text }}>
+            <Text style={{ color: colors.text }}>
               {formatMessageTimestamp(props.item.last_message.timestamp)}
             </Text>
           </View>
@@ -97,13 +100,13 @@ export const ConversationItem = (props) => {
               <View
                 style={{
                   borderWidth: 1,
-                  borderColor: "white",
+                  borderColor: colors.text,
                   padding: 5,
                   paddingHorizontal: messageCount >= 10 ? 7 : 10,
                   borderRadius: 200,
                 }}
               >
-                <Text style={{ color: Colors.text }}>
+                <Text style={{ color: colors.text }}>
                   {
                     props.unreadMessages.find(
                       (el) => el.name == props.item.name

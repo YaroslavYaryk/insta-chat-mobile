@@ -31,6 +31,8 @@ import { screenOptions as startConversationScreenOptions } from "../screens/Star
 import { UserInfo } from "../screens/UserInfo";
 import { screenOptions as userInfoScreenActions } from "../screens/UserInfo";
 
+import { useTheme } from "@react-navigation/native";
+
 import Settings from "../screens/Settings";
 
 import CustomDrawer from "../components/UI/CustomDrawer";
@@ -45,7 +47,6 @@ const defaultNavOptions = {
   headerBackTitleStyle: {
     fontFamily: "open-sans",
   },
-  headerTintColor: Platform.OS === "android" ? "white" : Colors.text,
 };
 
 export default function Navigation() {
@@ -55,8 +56,11 @@ export default function Navigation() {
 const Stack = createNativeStackNavigator();
 
 function BaseNavigator() {
+
+  const { colors } = useTheme();
+
   return (
-    <Stack.Navigator screenOptions={defaultNavOptions}>
+    <Stack.Navigator screenOptions={[defaultNavOptions, {headerTintColor: colors.text}]}>
       <Stack.Screen
         name="Conversations"
         component={Conversations}

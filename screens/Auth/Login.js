@@ -26,6 +26,7 @@ import { HOST, PORT } from "../../config/server";
 import SeccessPopup from "../../components/UI/SuccessPopup";
 import AwesomeAlert from "react-native-awesome-alerts";
 const { width } = Dimensions.get("window");
+import { useTheme } from "@react-navigation/native";
 
 const FORM_INPUT_UPDATE = "FORM_INPUT_UPDATE";
 
@@ -53,6 +54,7 @@ const formReducer = (state, action) => {
 };
 
 const Login = (props) => {
+  const { colors } = useTheme();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState();
   const [diabledButton, setDisabledButton] = useState(true);
@@ -131,15 +133,15 @@ const Login = (props) => {
 
   if (isLoading) {
     return (
-      <View style={styles.centered}>
-        <ActivityIndicator size="large" color={Colors.headerBold} />
+      <View style={[styles.centered, { backgroundColor: colors.background }]}>
+        <ActivityIndicator size="large" color={colors.headerBold} />
       </View>
     );
   }
 
   return (
     // <View>
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       <View>
         <AwesomeAlert
           show={visible}
@@ -173,8 +175,12 @@ const Login = (props) => {
         initialValue=""
         login={true}
         placeholder="Username"
-        style={styles.input}
-        placeholderTextColor={Colors.text}
+        style={[
+          styles.input,
+          { color: colors.text, borderColor: colors.inputBorder },
+        ]}
+        placeholderTextColor={colors.text}
+        colors={colors}
       />
       <Input
         id="password"
@@ -189,8 +195,16 @@ const Login = (props) => {
         initialValue=""
         login={true}
         placeholder="Password"
-        style={[styles.input, { marginBottom: 5 }]}
-        placeholderTextColor={Colors.text}
+        style={[
+          styles.input,
+          {
+            marginBottom: 5,
+            color: colors.text,
+            borderColor: colors.inputBorder,
+          },
+        ]}
+        placeholderTextColor={colors.text}
+        colors={colors}
       />
       <TouchableOpacity
         disabled={diabledButton}
@@ -216,14 +230,20 @@ const Login = (props) => {
 };
 
 export const screenOptions = (navData) => {
+  const { colors } = useTheme();
   return {
-    headerTitle: "Instagram",
+    headerTitle: () => (
+      <View>
+        <Text style={{ color: colors.text, fontSize: 22, fontWeight: "700" }}>
+          Instachat
+        </Text>
+      </View>
+    ),
   };
 };
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: Colors.background,
     flex: 1,
     flexDirection: "column",
     justifyContent: "center",
@@ -232,7 +252,6 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: Colors.background,
   },
   logoContainer: {
     display: "flex",
@@ -240,14 +259,12 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   input: {
-    borderColor: "#ccc",
     borderRadius: 8,
     borderWidth: 1,
     fontSize: 16,
     marginHorizontal: 24,
     marginVertical: -8,
     padding: 12,
-    color: Colors.text,
     placeholderTextColor: "white",
   },
   login: {

@@ -29,9 +29,13 @@ import CustomModal from "./CustomModal";
 import { FontAwesome } from "@expo/vector-icons";
 import { useDispatch, useSelector } from "react-redux";
 
+import { useTheme } from "@react-navigation/native";
+
 const { width, height } = Dimensions.get("window");
 
 export const MessageItem = (props) => {
+  const { colors } = useTheme();
+
   const user = useSelector((state) => state.auth);
 
   const [imagePreview, setImagePreview] = useState("");
@@ -62,7 +66,7 @@ export const MessageItem = (props) => {
             borderTopRightRadius: 5,
             borderBottomLeftRadius: 5,
             maxWidth: 250,
-            backgroundColor: messageToMe ? "#1f374a" : "#2b5278",
+            backgroundColor: messageToMe ? colors.messToMe : colors.messFromMe,
             borderWidth:
               messageOptionsOpen ||
               message.scroll ||
@@ -75,7 +79,7 @@ export const MessageItem = (props) => {
               message.scroll ||
               props.editedId === message.id ||
               props.repliedMessageId === message.id
-                ? "#69bbfa"
+                ? colors.read
                 : "",
           }}
         >
@@ -88,7 +92,7 @@ export const MessageItem = (props) => {
                 paddingHorizontal: 5,
               }}
             >
-              <Text style={{ color: "#69bbfa" }}>
+              <Text style={{ color: colors.read }}>
                 Forwarded from {message.from_user.username}
               </Text>
             </View>
@@ -125,14 +129,14 @@ export const MessageItem = (props) => {
                       fontWeight: "1000",
                       fontSize: 20,
                       marginRight: 5,
-                      color: Colors.text,
+                      color: colors.text,
                     }}
                   >
                     |
                   </Text>
                   {getMessageById(message.parent) &&
                   getMessageById(message.parent).content ? (
-                    <Text style={{ color: Colors.text }}>
+                    <Text style={{ color: colors.text }}>
                       {getMessageById(message.parent)?.content.length > 15
                         ? `${getMessageById(message.parent)?.content.slice(
                             0,
@@ -164,7 +168,7 @@ export const MessageItem = (props) => {
                     </View>
                   ) : (
                     // <Text>{getMessageById(message.parent).images.length}</Text>
-                    <Text style={{ color: Colors.text }}>Hidden message</Text>
+                    <Text style={{ color: colors.text }}>Hidden message</Text>
                   )}
                 </View>
               </TouchableOpacity>
@@ -229,7 +233,7 @@ export const MessageItem = (props) => {
                   minWidth: 150,
                 }}
               >
-                <Text style={{ color: Colors.text }}>{message.content}</Text>
+                <Text style={{ color: colors.text }}>{message.content}</Text>
               </View>
             )}
             <View
@@ -243,7 +247,7 @@ export const MessageItem = (props) => {
             >
               <View
                 style={{
-                  color: Colors.text,
+                  color: colors.text,
                   flexDirection: "row",
                   alignItems: "center",
                   marginBottom: 5,
@@ -257,7 +261,7 @@ export const MessageItem = (props) => {
                     style={{
                       marginRight: 5,
                       fontSize: 10,
-                      color: Colors.text,
+                      color: colors.text,
                     }}
                   >
                     Edited
@@ -265,7 +269,7 @@ export const MessageItem = (props) => {
                 )}
                 <Text
                   style={{
-                    color: Colors.text,
+                    color: colors.text,
                     fontSize: 12,
                   }}
                 >
@@ -277,10 +281,14 @@ export const MessageItem = (props) => {
                       <Ionicons
                         name="checkmark-done"
                         size={18}
-                        color={"#69bbfa"}
+                        color={colors.read}
                       />
                     ) : (
-                      <Ionicons name="checkmark" size={18} color={"#69bbfa"} />
+                      <Ionicons
+                        name="checkmark"
+                        size={18}
+                        color={colors.read}
+                      />
                     )}
                   </View>
                 )}
@@ -326,8 +334,8 @@ export const MessageItem = (props) => {
                 style={{
                   height: !messageToMe ? 205 : 125,
                   width: 150,
-                  borderColor: "#8E8E8E",
-                  backgroundColor: "#2E3740",
+                  borderColor: colors.messageOptionsBorder,
+                  backgroundColor: colors.messageOptionsBackground,
                   borderRadius: 10,
                   borderWidth: 1,
                 }}
@@ -339,8 +347,19 @@ export const MessageItem = (props) => {
                   }}
                 >
                   <View style={styles.messageOptions}>
-                    <Octicons name="reply" size={20} color="#B2B2B2" />
-                    <Text style={styles.messageOptionsText}>Reply</Text>
+                    <Octicons
+                      name="reply"
+                      size={20}
+                      color={colors.messageOptionsText}
+                    />
+                    <Text
+                      style={[
+                        styles.messageOptionsText,
+                        { color: colors.messageOptionsText },
+                      ]}
+                    >
+                      Reply
+                    </Text>
                   </View>
                 </TouchableOpacity>
                 <TouchableOpacity
@@ -350,8 +369,19 @@ export const MessageItem = (props) => {
                   }}
                 >
                   <View style={styles.messageOptions}>
-                    <Ionicons name="heart-outline" size={20} color="#B2B2B2" />
-                    <Text style={styles.messageOptionsText}>Like</Text>
+                    <Ionicons
+                      name="heart-outline"
+                      size={20}
+                      color={colors.messageOptionsText}
+                    />
+                    <Text
+                      style={[
+                        styles.messageOptionsText,
+                        { color: colors.messageOptionsText },
+                      ]}
+                    >
+                      Like
+                    </Text>
                   </View>
                 </TouchableOpacity>
                 <TouchableOpacity
@@ -361,8 +391,19 @@ export const MessageItem = (props) => {
                   }}
                 >
                   <View style={styles.messageOptions}>
-                    <Ionicons name="arrow-forward" size={20} color="#B2B2B2" />
-                    <Text style={styles.messageOptionsText}>Forward</Text>
+                    <Ionicons
+                      name="arrow-forward"
+                      size={20}
+                      color={colors.messageOptionsText}
+                    />
+                    <Text
+                      style={[
+                        styles.messageOptionsText,
+                        { color: colors.messageOptionsText },
+                      ]}
+                    >
+                      Forward
+                    </Text>
                   </View>
                 </TouchableOpacity>
                 {!messageToMe && (
@@ -373,8 +414,19 @@ export const MessageItem = (props) => {
                     }}
                   >
                     <View style={styles.messageOptions}>
-                      <MaterialIcons name="edit" size={20} color="#B2B2B2" />
-                      <Text style={styles.messageOptionsText}>Edit</Text>
+                      <MaterialIcons
+                        name="edit"
+                        size={20}
+                        color={colors.messageOptionsText}
+                      />
+                      <Text
+                        style={[
+                          styles.messageOptionsText,
+                          { color: colors.messageOptionsText },
+                        ]}
+                      >
+                        Edit
+                      </Text>
                     </View>
                   </TouchableOpacity>
                 )}
@@ -389,9 +441,16 @@ export const MessageItem = (props) => {
                       <MaterialIcons
                         name="delete-outline"
                         size={20}
-                        color="#B2B2B2"
+                        color={colors.messageOptionsText}
                       />
-                      <Text style={styles.messageOptionsText}>Delete</Text>
+                      <Text
+                        style={[
+                          styles.messageOptionsText,
+                          { color: colors.messageOptionsText },
+                        ]}
+                      >
+                        Delete
+                      </Text>
                     </View>
                   </TouchableOpacity>
                 )}
@@ -411,8 +470,8 @@ export const MessageItem = (props) => {
             style={{
               height: height,
               width: width,
-              borderColor: "#8E8E8E",
-              backgroundColor: "rgba(46,55,64,0.95)",
+              borderColor: colors.messageOptionsText,
+              backgroundColor: colors.messageOptionsBackground,
             }}
           >
             <Image
@@ -472,6 +531,5 @@ const styles = StyleSheet.create({
   },
   messageOptionsText: {
     marginLeft: 5,
-    color: "#B2B2B2",
   },
 });

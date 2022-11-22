@@ -14,12 +14,14 @@ import conversationReducer from "./store/reducers/conversationReducer";
 import usersReducer from "./store/reducers/usersReducer";
 import chatReducer from "./store/reducers/chatReducer";
 import authReducer from "./store/reducers/authReducer";
+import themeReducer from "./store/reducers/themeReducer";
 
 const rootReducer = combineReducers({
   conversations: conversationReducer,
   users: usersReducer,
   chat: chatReducer,
   auth: authReducer,
+  theme: themeReducer,
 });
 
 const store = configureStore(

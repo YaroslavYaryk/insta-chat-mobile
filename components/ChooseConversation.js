@@ -9,13 +9,16 @@ import {
   Image,
 } from "react-native";
 import Colors from "../constants/Colors";
+import { useTheme } from "@react-navigation/native";
 
 const ChooseConversation = (props) => {
+  const { colors } = useTheme();
+
   return (
     <View
       style={{
         borderWidth: 1,
-        borderColor: "#435264",
+        borderColor: colors.conversationBorder,
         padding: 10,
         position: "relative",
       }}
@@ -48,7 +51,7 @@ const ChooseConversation = (props) => {
         <View style={{ marginLeft: 10 }}>
           <View>
             <Text
-              style={{ color: Colors.text, fontSize: 17, fontWeight: "600" }}
+              style={{ color: colors.text, fontSize: 17, fontWeight: "600" }}
             >
               {props.item.username}
             </Text>

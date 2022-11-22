@@ -24,7 +24,11 @@ import * as usersActions from "../store/actions/usersActions";
 import ChooseConversation from "../components/ChooseConversation";
 import { useIsFocused } from "@react-navigation/native";
 
+import { useTheme } from "@react-navigation/native";
+
 export const StartConversation = (props) => {
+  const { colors } = useTheme();
+
   const user = useSelector((state) => state.auth);
 
   const allUsers = useSelector((state) => state.users.allUsers);
@@ -76,11 +80,10 @@ export const StartConversation = (props) => {
   const textChangeHandler = (word) => {
     setInputValue(word);
     if (word) {
-      setUserQuery((old) =>
-        old.filter((el) =>
-          el.username.toLowerCase().includes(word.toLowerCase())
-        )
+      const newOne = allUsers.filter((el) =>
+        el.username.toLowerCase().includes(word.toLowerCase())
       );
+      setUserQuery(newOne);
     } else {
       setUserQuery(allUsers);
     }
@@ -108,8 +111,8 @@ export const StartConversation = (props) => {
 
   if (allUsers.length == 0) {
     return (
-      <View style={styles.centered}>
-        <Text style={{ color: Colors.text }}>You dont have conversations</Text>
+      <View style={[styles.centered, { backgroundColor: colors.background }]}>
+        <Text style={{ color: colors.text }}>You dont have conversations</Text>
       </View>
     );
   }
@@ -117,22 +120,25 @@ export const StartConversation = (props) => {
   // if (isLoading) {
   //   return (
   //     <View style={styles.centered}>
-  //       <ActivityIndicator size="large" color={Colors.primary} />
+  //       <ActivityIndicator size="large" color={colors.primary} />
   //     </View>
   //   );
   // }
 
   return (
-    <View style={[styles.container, {}]}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={styles.searchSection}>
         <TextInput
-          style={[styles.input]}
+          style={[
+            styles.input,
+            { color: colors.text, borderColor: colors.inputColor },
+          ]}
           value={inputValue}
           onChangeText={(el) => {
             textChangeHandler(el);
           }}
           placeholder="Search user"
-          placeholderTextColor={Colors.text}
+          placeholderTextColor={colors.text}
         />
       </View>
       <FlatList
@@ -143,7 +149,7 @@ export const StartConversation = (props) => {
         ItemSeparatorComponent={ItemSeparatorView}
         enableEmptySections={true}
         renderItem={(itemData) => (
-          <View key={Math.random() + Math.random()} style={{ marginBottom: 5 }}>
+          <View key={Math.random() + Math.random()} style={{ marginBottom: 0 }}>
             <TouchableOpacity
               onPress={() => {
                 handleSelectChat(itemData.item.username);
@@ -186,23 +192,21 @@ export const screenOptions = (navData) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.background,
   },
   centered: {
     flex: 1,
-    backgroundColor: Colors.background,
+
     justifyContent: "center",
     alignItems: "center",
   },
   input: {
-    borderColor: "#ccc",
     borderRadius: 8,
     borderWidth: 1,
     fontSize: 16,
     // marginHorizontal: 24,
     marginVertical: 10,
     padding: 12,
-    color: Colors.text,
+
     placeholderTextColor: "white",
   },
 });

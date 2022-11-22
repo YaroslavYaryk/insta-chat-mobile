@@ -23,6 +23,8 @@ const { width } = Dimensions.get("window");
 import { HOST, PORT } from "../../config/server";
 import SeccessPopup from "../../components/UI/SuccessPopup";
 
+import { useTheme } from "@react-navigation/native";
+
 const FORM_INPUT_UPDATE = "FORM_INPUT_UPDATE";
 
 const formReducer = (state, action) => {
@@ -49,6 +51,8 @@ const formReducer = (state, action) => {
 };
 
 const Registration = (props) => {
+  const { colors } = useTheme();
+
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState();
   const [diabledButton, setDisabledButton] = useState(true);
@@ -130,14 +134,14 @@ const Registration = (props) => {
 
   if (isLoading) {
     return (
-      <View style={styles.centered}>
-        <ActivityIndicator size="large" color={Colors.primary} />
+      <View style={[styles.centered, { backgroundColor: colors.background }]}>
+        <ActivityIndicator size="large" color={colors.primary} />
       </View>
     );
   }
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       <ScrollView>
         <View style={styles.logoContainer}>
           <Image source={require("../../assets/logo.png")} />
@@ -153,8 +157,11 @@ const Registration = (props) => {
           initialValue=""
           login={true}
           placeholder="First name"
-          style={styles.input}
-          placeholderTextColor={Colors.text}
+          style={[
+            styles.input,
+            { borderColor: colors.inputBorder, color: colors.text },
+          ]}
+          placeholderTextColor={colors.text}
         />
         <Input
           id="lastName"
@@ -167,8 +174,11 @@ const Registration = (props) => {
           initialValue=""
           login={true}
           placeholder="Last name"
-          style={styles.input}
-          placeholderTextColor={Colors.text}
+          style={[
+            styles.input,
+            { borderColor: colors.inputBorder, color: colors.text },
+          ]}
+          placeholderTextColor={colors.text}
         />
         <Input
           id="username"
@@ -181,8 +191,11 @@ const Registration = (props) => {
           initialValue=""
           login={true}
           placeholder="Username"
-          style={styles.input}
-          placeholderTextColor={Colors.text}
+          style={[
+            styles.input,
+            { borderColor: colors.inputBorder, color: colors.text },
+          ]}
+          placeholderTextColor={colors.text}
         />
         <Input
           id="password"
@@ -197,8 +210,11 @@ const Registration = (props) => {
           initialValue=""
           login={true}
           placeholder="Password"
-          style={[styles.input]}
-          placeholderTextColor={Colors.text}
+          style={[
+            styles.input,
+            { borderColor: colors.inputBorder, color: colors.text },
+          ]}
+          placeholderTextColor={colors.text}
         />
         <Input
           id="confirmPassword"
@@ -214,8 +230,15 @@ const Registration = (props) => {
           login={true}
           dontMatchError={dontMatchError}
           placeholder="Confirm password"
-          style={[styles.input, { marginBottom: 0 }]}
-          placeholderTextColor={Colors.text}
+          style={[
+            styles.input,
+            {
+              marginBottom: 0,
+              borderColor: colors.inputBorder,
+              color: colors.text,
+            },
+          ]}
+          placeholderTextColor={colors.text}
         />
       </ScrollView>
       <TouchableOpacity
@@ -246,14 +269,20 @@ const Registration = (props) => {
 };
 
 export const screenOptions = (navData) => {
+  const { colors } = useTheme();
   return {
-    headerTitle: "Instagram",
+    headerTitle: () => (
+      <View>
+        <Text style={{ color: colors.text, fontSize: 22, fontWeight: "700" }}>
+          Instachat
+        </Text>
+      </View>
+    ),
   };
 };
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: Colors.background,
     flex: 1,
     flexDirection: "column",
     justifyContent: "center",
@@ -262,22 +291,20 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: Colors.background,
   },
   logoContainer: {
     display: "flex",
     flexDirection: "row",
     justifyContent: "center",
+    marginTop: 20,
   },
   input: {
-    borderColor: "#ccc",
     borderRadius: 8,
     borderWidth: 1,
     fontSize: 16,
     marginHorizontal: 24,
     marginVertical: -8,
     padding: 12,
-    color: Colors.text,
   },
   login: {
     backgroundColor: "#3B82F6",
