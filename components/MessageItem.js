@@ -28,10 +28,12 @@ import { MaterialIcons } from "@expo/vector-icons";
 import CustomModal from "./CustomModal";
 import { FontAwesome } from "@expo/vector-icons";
 import { useDispatch, useSelector } from "react-redux";
-
 import { useTheme } from "@react-navigation/native";
-
+import { AntDesign } from "@expo/vector-icons";
+import { Audio } from "expo-av";
+import * as Sharing from "expo-sharing";
 const { width, height } = Dimensions.get("window");
+import { VoiceBars } from "./UI/VoiceBars";
 
 export const MessageItem = (props) => {
   const { colors } = useTheme();
@@ -46,6 +48,13 @@ export const MessageItem = (props) => {
   const messageToMe = user.username === message.to_user.username;
 
   const [messageOptionsOpen, setMessageOptionsOpen] = useState(false);
+
+  const playAudio = useCallback(async (link) => {
+    const { sound } = await Audio.Sound.createAsync({
+      uri: link,
+    });
+    await sound.playAsync();
+  });
 
   return (
     <View
@@ -224,7 +233,7 @@ export const MessageItem = (props) => {
                 </View>
               ))}
             </View>
-            {message.content && (
+            {message.content && !message.content.startsWith("file:///") ? (
               <View
                 style={{
                   maxWidth: 220,
@@ -235,6 +244,38 @@ export const MessageItem = (props) => {
               >
                 <Text style={{ color: colors.text }}>{message.content}</Text>
               </View>
+            ) : message.content ? (
+              <View
+                style={{
+                  maxWidth: 220,
+                  padding: 5,
+                  paddingHorizontal: 10,
+                  minWidth: 150,
+                  flexDirection: "row",
+                  alignItems: "center",
+                }}
+              >
+                <View style={{ marginRight: 5, paddingTop: 10 }}>
+                  <TouchableOpacity
+                    onPress={() => {
+                      playAudio(message.content);
+                    }}
+                  >
+                    <FontAwesome name="play-circle" size={30} color="black" />
+                  </TouchableOpacity>
+                </View>
+                <View
+                  style={{
+                    width: 100,
+                    overflow: "hidden",
+                    // paddingBottom: 10,
+                  }}
+                >
+                  <VoiceBars />
+                </View>
+              </View>
+            ) : (
+              <View></View>
             )}
             <View
               style={{

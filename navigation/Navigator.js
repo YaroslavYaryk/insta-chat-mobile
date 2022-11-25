@@ -12,7 +12,6 @@ import Colors from "../constants/Colors";
 const BaseAuthNavigator = (props) => {
   const isAuth = useSelector((state) => !!state.auth.token);
   const theme = useSelector((state) => state.theme.themeColors);
-  console.log(theme);
   const MyTheme = {
     ...DefaultTheme,
     colors: theme,

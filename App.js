@@ -1,14 +1,20 @@
 import { StatusBar } from "expo-status-bar";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
-import { StyleSheet, Text, View } from "react-native";
+import {
+  StyleSheet,
+  Text,
+  View,
+  Button,
+  ActivityIndicator,
+} from "react-native";
 import useCachedResources from "./hooks/useCachedResources";
 import ReduxThunk from "redux-thunk";
 import { configureStore } from "@reduxjs/toolkit";
 import { Provider } from "react-redux";
 import { combineReducers, applyMiddleware } from "redux";
 import { LogBox } from "react-native";
-
+import React, { useCallback } from "react";
 import BaseAuthNavigator from "./navigation/Navigator";
 import conversationReducer from "./store/reducers/conversationReducer";
 import usersReducer from "./store/reducers/usersReducer";

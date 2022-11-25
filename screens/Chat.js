@@ -36,6 +36,7 @@ import {
   createNativeStackNavigator,
   HeaderBack,
 } from "@react-navigation/native-stack";
+import { Entypo } from "@expo/vector-icons";
 import useWebSocket from "react-use-websocket";
 import { useDispatch, useSelector } from "react-redux";
 import * as conversationActions from "../store/actions/conversationActions";
@@ -51,6 +52,22 @@ import { useTheme } from "@react-navigation/native";
 
 import ChoseConversationPopup from "../components/ChoseConversationPopup";
 import { formatMessageTimestamp } from "../services/TimeServices";
+
+import { Audio } from "expo-av";
+import * as Sharing from "expo-sharing";
+
+import {
+  BallIndicator,
+  BarIndicator,
+  DotIndicator,
+  MaterialIndicator,
+  PacmanIndicator,
+  PulseIndicator,
+  SkypeIndicator,
+  UIActivityIndicator,
+  WaveIndicator,
+} from "react-native-indicators";
+import { VoiceBars } from "../components/UI/VoiceBars";
 
 const VIEWABILITY_CONFIG = {
   minimumViewTime: 3000,
@@ -96,6 +113,81 @@ export const Chat = (props) => {
   const flatListRef = useRef();
 
   const [imagePreview, setImagePreview] = useState("");
+
+  const [recording, setRecording] = React.useState();
+  const [recordings, setRecordings] = React.useState([]);
+
+  async function startRecording() {
+    try {
+      const permission = await Audio.requestPermissionsAsync();
+
+      if (permission.status === "granted") {
+        await Audio.setAudioModeAsync({
+          allowsRecordingIOS: true,
+          playsInSilentModeIOS: true,
+        });
+
+        const { recording } = await Audio.Recording.createAsync(
+          Audio.RecordingOptionsPresets.HIGH_QUALITY
+        );
+
+        setRecording(recording);
+      } else {
+        setError("Please grant permission to app to access microphone");
+      }
+    } catch (err) {
+      console.error("Failed to start recording", err);
+    }
+  }
+
+  async function stopRecording() {
+    setRecording(undefined);
+    await recording.stopAndUnloadAsync();
+    const { sound, status } = await recording.createNewLoadedSoundAsync();
+    setRecording({
+      sound: sound,
+      duration: getDurationFormatted(status.durationMillis),
+      file: recording.getURI(),
+    });
+    setMessage(recording.getURI());
+  }
+
+  function getDurationFormatted(millis) {
+    const minutes = millis / 1000 / 60;
+    const minutesDisplay = Math.floor(minutes);
+    const seconds = Math.round((minutes - minutesDisplay) * 60);
+    const secondsDisplay = seconds < 10 ? `0${seconds}` : seconds;
+    return `${minutesDisplay}:${secondsDisplay}`;
+  }
+
+  const playAudio = useCallback(async (link) => {
+    const { sound } = await Audio.Sound.createAsync({
+      uri: link,
+    });
+    await sound.playAsync();
+  });
+
+  function getRecordingLines() {
+    return recordings.map((recordingLine, index) => {
+      return (
+        <View key={index} style={styles.row}>
+          <Text style={styles.fill}>
+            Recording {index + 1} - {recordingLine.duration}
+          </Text>
+          <Button
+            style={styles.button}
+            onPress={() => playAudio(recordingLine.file)}
+            title="Play"
+          ></Button>
+          <Button
+            style={styles.button}
+            onPress={() => Sharing.shareAsync(recordingLine.file)}
+            title="Share"
+          ></Button>
+        </View>
+      );
+    });
+  }
 
   const { readyState, sendJsonMessage } = useWebSocket(
     user ? `ws://${JUST_HOST}:${PORT}/chats/${conversationName}/` : null,
@@ -382,6 +474,7 @@ export const Chat = (props) => {
     setIsForwarded(false);
     setForwardConversationName(null);
     setForwarderMessageId(null);
+    setRecording(null);
   };
 
   function handleSubmit(conversationName) {
@@ -472,6 +565,11 @@ export const Chat = (props) => {
     setMessage(e);
     onType();
   }
+
+  // <Button
+  //   title={recording ? "Stop Recording" : "Start Recording"}
+  //   onPress={recording ? stopRecording : startRecording}
+  // />
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
@@ -596,6 +694,7 @@ export const Chat = (props) => {
           </View>
         </View>
       )}
+
       {filesBase64.length > 0 && (
         <View style={{ borderWidth: 1, borderColor: colors.read, padding: 5 }}>
           <View style={{ flexDirection: "row", alignItems: "center" }}>
@@ -636,35 +735,19 @@ export const Chat = (props) => {
           </View>
         </View>
       )}
-      <View
-        style={{
-          flexDirection: "row",
-          alignItems: "center",
-          padding: 5,
-          // borderBottomRightRadius: 10,
-          // borderBottomLeftRadius: 10,
-          backgroundColor: colors.inputBg,
-        }}
-      >
-        <View style={{ minWidth: 35, alignItems: "center" }}>
-          <FontAwesome5 name="smile" size={24} color={colors.inputColor} />
-        </View>
+      {console.log(!message, recording)}
+      {!recording && (!message || !message.startsWith("file:///")) ? (
         <View
           style={{
-            // marginBottom: 20,
-            width: width - 110,
+            flexDirection: "row",
+            alignItems: "center",
+            padding: 5,
+            // borderBottomRightRadius: 10,
+            // borderBottomLeftRadius: 10,
+            backgroundColor: colors.inputBg,
           }}
         >
-          <TextInput
-            style={{ padding: 5, color: colors.text }}
-            onChangeText={handleChangeMessage}
-            value={message}
-            placeholder="Write a message..."
-            placeholderTextColor={colors.inputColor}
-          />
-        </View>
-        {!message && !filesBase64.length > 0 && (
-          <View style={{ minWidth: 50, alignItems: "flex-end" }}>
+          <View style={{ minWidth: 35, alignItems: "center" }}>
             <SimpleLineIcons
               name="picture"
               size={24}
@@ -672,8 +755,117 @@ export const Chat = (props) => {
               onPress={pickImage}
             />
           </View>
-        )}
-        {(message || filesBase64.length > 0) && (
+          <View
+            style={{
+              // marginBottom: 20,
+              width: width - 110,
+            }}
+          >
+            <TextInput
+              style={{ padding: 5, color: colors.text }}
+              onChangeText={handleChangeMessage}
+              value={message}
+              placeholder="Write a message..."
+              placeholderTextColor={colors.inputColor}
+            />
+          </View>
+          {!message && !filesBase64.length > 0 && (
+            <View style={{ minWidth: 50, alignItems: "flex-end" }}>
+              <TouchableOpacity
+                onLongPress={() => {
+                  startRecording();
+                }}
+              >
+                <MaterialIcons
+                  name="keyboard-voice"
+                  size={24}
+                  color={colors.inputColor}
+                />
+              </TouchableOpacity>
+            </View>
+          )}
+          {(message || filesBase64.length > 0) && (
+            <View style={{ minWidth: 50, alignItems: "flex-end" }}>
+              <Ionicons
+                name="md-send"
+                size={24}
+                color={colors.read}
+                onPress={() => {
+                  handleSubmit("");
+                }}
+              />
+            </View>
+          )}
+        </View>
+      ) : !message ? (
+        <View
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            padding: 5,
+            // borderBottomRightRadius: 10,
+            // borderBottomLeftRadius: 10,
+            backgroundColor: colors.inputBg,
+          }}
+        >
+          <View style={{ minWidth: 35, alignItems: "center" }}></View>
+          <View
+            style={{
+              // marginBottom: 20,
+              width: width - 110,
+              height: 50,
+            }}
+          >
+            <BarIndicator count={20} />
+          </View>
+          <View style={{ minWidth: 50, alignItems: "flex-end" }}>
+            <FontAwesome5
+              name="stop-circle"
+              size={24}
+              color={colors.read}
+              onPress={() => {
+                stopRecording();
+              }}
+            />
+          </View>
+        </View>
+      ) : (
+        <View
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            padding: 5,
+            // borderBottomRightRadius: 10,
+            // borderBottomLeftRadius: 10,
+            backgroundColor: colors.inputBg,
+          }}
+        >
+          <View style={{ minWidth: 35, alignItems: "center" }}>
+            <Feather
+              name="trash-2"
+              size={24}
+              color={colors.inputColor}
+              onPress={() => {
+                makaAllNull();
+              }}
+            />
+          </View>
+          <View
+            style={{
+              // marginBottom: 20,
+              width: width - 110,
+              // height: 50,
+              marginBottom: 5,
+            }}
+          >
+            <TouchableOpacity
+              onPress={() => {
+                playAudio(message);
+              }}
+            >
+              <VoiceBars />
+            </TouchableOpacity>
+          </View>
           <View style={{ minWidth: 50, alignItems: "flex-end" }}>
             <Ionicons
               name="md-send"
@@ -684,8 +876,8 @@ export const Chat = (props) => {
               }}
             />
           </View>
-        )}
-      </View>
+        </View>
+      )}
 
       {imagePreview && (
         <CustomModal

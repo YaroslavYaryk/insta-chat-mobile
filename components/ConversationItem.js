@@ -63,7 +63,9 @@ export const ConversationItem = (props) => {
               {props.item.other_user.username}
             </Text>
             <Text style={{ color: colors.text, marginTop: 8 }}>
-              {props.item.last_message && props.item.last_message.content ? (
+              {props.item.last_message &&
+              props.item.last_message.content &&
+              !props.item.last_message.content.startsWith("file:///") ? (
                 props.item.last_message.content.toString().length > 20 ? (
                   <Text
                     style={{ fontSize: 14 }}
@@ -76,6 +78,8 @@ export const ConversationItem = (props) => {
                     {props.item.last_message?.content}
                   </Text>
                 )
+              ) : props.item.last_message.content.startsWith("file:///") ? (
+                <Text style={{ fontSize: 14 }}>Voice message</Text>
               ) : props.item.last_message?.images ? (
                 <Text style={{ fontSize: 14 }}>photo message</Text>
               ) : (
